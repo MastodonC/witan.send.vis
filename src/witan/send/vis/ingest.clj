@@ -45,21 +45,3 @@
               (map #(zipmap header %))
               xf)
              data)))))
-
-
-(defn output-setting-population [output-setting-file]
-  (csv-> output-setting-file
-         (map #(-> %
-                   (update :calendar-year ->int)
-                   (update :mean ->double)
-                   (update :std-dev ->double)
-                   (update :iqr ->double)
-                   (update :min ->double)
-                   (update :low-95pc-bound ->double)
-                   (update :q1 ->double)
-                   (update :median ->double)
-                   (update :q3 ->double)
-                   (update :high-95pc-bound ->double)
-                   (update :max ->double)
-                   (update :low-ci ->double)
-                   (update :high-ci ->double)))))
