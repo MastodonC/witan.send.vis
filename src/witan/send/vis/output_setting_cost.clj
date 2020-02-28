@@ -1,7 +1,7 @@
 (ns witan.send.vis.output-setting-cost
   (:require [clojure2d.color :as color]
-            [witan.send.vis.ingest :as ingest :refer [->int ->double csv->]]
-            [witan.send.vis :as vis]))
+            [witan.send.vis :as vis]
+            [witan.send.vis.ingest :as ingest :refer [->int ->double csv->]]))
 
 (defn output-setting-cost [output-setting-cost-file]
   (csv-> output-setting-cost-file
@@ -52,27 +52,27 @@
 (defn multi-line-data [ay-data]
   (reduce
    (fn [acc x]
-     (update acc (:academic-year x) (fnil conj []) [(:calendar-year x) (:median x)]))
+     (update acc (:setting x) (fnil conj []) [(:calendar-year x) (:median x)]))
    (sorted-map)
    ay-data))
 
 (defn domain-colors-and-points
-  "Generate colours and shapes for each academic year so we have
+  "Generate colours and shapes for each setting so we have
   something consistent"
   [ay-data]
   (let [pal (color/palette-presets :tableau-20-2)
         points [\O \s \o \S \+ \x]
-        academic-years (into (sorted-set) (map :academic-year) ay-data)]
+        settings (into (sorted-set) (map :setting) ay-data)]
     (into (sorted-map)
-          (map (fn [academic-year color point]
-                 [academic-year {:color color :point point}])
-               academic-years
+          (map (fn [setting color point]
+                 [setting {:color color :point point}])
+               settings
                (cycle pal)
                (cycle points)))))
 
 (defn setting-multi-line-chart-spec
-  "Multi-line for all academic-years x: calendar-years, y: median
-  population, each line: academic-year"
+  "Multi-line for all settings x: calendar-years, y: median
+  population, each line: setting"
   ([setting-data-by-domain title]
    (let [legend (into []
                       (map (fn [[domain-key {:keys [color point]}]]
@@ -86,12 +86,12 @@
                       setting-data-by-domain)]
      {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
       :y-axis {:tick-formatter vis/millions-formatter :label "Cost in Millions (£)" :format {:font-size 24 :font "Open Sans"}}
-      :legend {:label "Academic Year" :font "Open Sans" :font-style nil :font-size 50 :legend-spec legend}
+      :legend {:label "Settings" :font "Open Sans" :font-style nil :font-size 50 :legend-spec legend}
       :title {:label title :format {:font-size 24 :font "Open Sans Bold" :margin 36}}
       :size {:width 1024 :height 768 :background (color/color :white)}
       :series series})))
 
-;; ci for each academic-year: median, q1, q3, high-95pc, low-95pc
+;; ci for each setting: median, q1, q3, high-95pc, low-95pc
 (defn ci-series
   "Excpects a seq of maps that have median, high-ci, low-ci, and a key
   passed in for the x-axis"
@@ -121,7 +121,7 @@
   [{:keys [color shape title legend-label data]}]
   {:x-axis {:tick-formatter int :label "Calendar Year"}
    :y-axis {:tick-formatter vis/millions-formatter :label "Cost in Millions (£)"}
-   :legend {:label "Academic Year"
+   :legend {:label "Settings"
             :legend-spec [[:line legend-label {:color (color/color color) :shape shape :stroke {:size 2} :font "Open Sans"}]]}
    :title {:label title :format {:font-size 24 :font "Open Sans Bold" :margin 36}}
    :size {:width 1024 :height 768 :background (color/color :white)}
@@ -132,7 +132,7 @@
   [title setting-data-maps]
   {:x-axis {:tick-formatter int :label "Calendar Year"}
    :y-axis {:tick-formatter vis/millions-formatter :label "Cost in Millions (£)"}
-   :legend {:label "Academic Year"
+   :legend {:label "Legend"
             :legend-spec
             (into []
                   (map (fn [{:keys [color shape legend-label]}]
