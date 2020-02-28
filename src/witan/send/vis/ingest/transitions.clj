@@ -3,6 +3,7 @@
             [clojure.set :as cs]
             [witan.send.vis.ingest.transitions :as transitions]))
 
+;; TODO: Add historical transitions to all charts
 (defn historical [transitions-file]
   (ingest/csv-> transitions-file
                 (map #(-> %
