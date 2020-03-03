@@ -49,8 +49,8 @@
         (plotr/render-lattice size))))
 
 ;; we only add to the legend if it is a line with a point
-(defn add-legend [legend-spec {:keys [legend-label color shape]}]
-  (if shape
+(defn add-legend [legend-spec {:keys [legend-label color shape hide-legend]}]
+  (if (and shape (not hide-legend))
     (conj legend-spec
           [:line legend-label
            {:color color :shape shape :stroke {:size 2} :font "Open Sans" :font-size 36}])
