@@ -1,5 +1,7 @@
 (ns witan.send.vis.output-setting
   (:require [clojure2d.color :as color]
+            [witan.send.chart :as wsc]
+            [witan.send.series :as wss]
             [witan.send.vis.ingest :as ingest :refer [->int ->double csv->]]))
 
 (defn output-setting [output-setting-file]
@@ -58,10 +60,10 @@
 (defn domain-colors-and-points
   "Generate colours and shapes for each setting year so we have
   something consistent"
-  [ay-data]
+  [setting-data]
   (let [pal (color/palette-presets :tableau-20-2)
         points [\O \s \o \S \+ \x]
-        settings (into (sorted-set) (map :setting) ay-data)]
+        settings (into (sorted-set) (map :setting) setting-data)]
     (into (sorted-map)
           (map (fn [setting color point]
                  [setting {:color color :point point}])
@@ -143,3 +145,65 @@
                  (mapcat (fn [{:keys [color shape data]}]
                            (ci-series color shape :calendar-year data)))
                  setting-data-maps)})
+
+(defn compare-all-settings [{:keys [a-title b-title]} historical-transitions output-setting-a output-setting-b]
+  (let [settings (into (sorted-set) (map :setting) output-setting-a)]
+    (into []
+          (map (fn [setting]
+                 (transduce
+                  (map identity)
+                  (wsc/chart-spec-rf
+                   {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
+                    :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
+                    :legend {:label "Data Sets"}
+                    :title  {:label (format "Compare %s and %s setting populations for %s" a-title b-title setting)
+                             :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}})
+                  (vector {:color :blue
+                           :shape \s
+                           :legend-label a-title
+                           :data (wss/maps->line {:x-key :calendar-year
+                                                  :y-key :median
+                                                  :color :blue
+                                                  :point \s}
+                                                 (filter
+                                                  #(= (:setting %) setting)
+                                                  output-setting-a))}
+                          {:color :blue
+                           :legend-label a-title
+                           :data (wss/maps->ci {:x-key :calendar-year
+                                                :hi-y-key :q3
+                                                :low-y-key :q1
+                                                :color :blue}
+                                               (filter
+                                                #(= (:setting %) setting)
+                                                output-setting-a))}
+                          {:color :orange
+                           :shape \o
+                           :legend-label b-title
+                           :data (wss/maps->line {:x-key :calendar-year
+                                                  :y-key :median
+                                                  :color :orange
+                                                  :point \o}
+                                                 (filter
+                                                  #(= (:setting %) setting)
+                                                  output-setting-b))}
+                          {:color :orange
+                           :legend-label b-title
+                           :data (wss/maps->ci {:x-key :calendar-year
+                                                :hi-y-key :q3
+                                                :low-y-key :q1
+                                                :color :orange}
+                                               (filter
+                                                #(= (:setting %) setting)
+                                                output-setting-b))}
+                          {:color :green
+                           :legend-label "Historical Transitions"
+                           :shape \+
+                           :data (wss/maps->line {:x-key :calendar-year
+                                                  :y-key :population
+                                                  :color :green
+                                                  :point \+}
+                                                 (filter
+                                                  #(= (:setting %) setting)
+                                                  historical-transitions))}))))
+          settings)))

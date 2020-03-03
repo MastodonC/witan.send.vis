@@ -4,48 +4,9 @@
             [cljplot.core :as plot]
             [clojure2d.core :as c2d]
             [clojure2d.color :as color]
-            [clj-pdf.core :as pdf]
             [net.cgrand.xforms :as x]
             [witan.send.vis.ingest :as ingest]
             [witan.send.vis.ingest.transitions :as transitions]))
-
-(comment
-  (pdf/pdf
-   [{:size :a4
-     :orientation :landscape
-     :footer {:x 20
-              :y 40
-              :table [:pdf-table
-                      {:border false}
-                      [70 30]
-                      [#_[:image {:xscale 0.01
-                                  :yscale 0.01}
-                          "/home/bld/Pictures/new-kixi.png"] "Test 1" "Mastodon C Ltd 2019"]]}
-     :bottom-margin 10
-     :top-margin 10
-     :register-system-fonts? true
-     :font {:encoding :unicode
-            :ttf-name "/usr/share/fonts/truetype/open-sans/OpenSans-Regular.ttf"}}
-    [:heading {:style {:size 32}} "MSSA Setting Projection vs Capacity"]
-    [:spacer 3]
-    [:pdf-table
-     {:width-percent 100
-      :cell-border false}
-     [70 25]
-     [[:image
-       {:xscale 0.7
-        :yscale 0.7}
-       "/home/bld/wip/witan.send.vis/setting_mssa_projected_population_vs_capacity_including_ci-0.png"]
-      [:pdf-cell
-       {:valign :middle}
-       "some text where I'm not quite sure how wide things go or how this might work or if there is even any word wrapping. OK there is word wrapping."
-       "what about another paragraph here?"
-       [:list
-        "foo"
-        "bar"
-        "baz"]]]]
-    ]
-   "foo.pdf"))
 
 (defn map-kv [f coll]
   (reduce-kv (fn [m k v] (assoc m k (f v))) (empty coll) coll))
