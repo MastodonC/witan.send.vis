@@ -32,7 +32,7 @@
       prepped-data)))
 
 (defn zero-y-index [{:keys [x-axis y-axis legend title series size]}]
-  (let [size (or size {:width 1024 :height 768})
+  (let [size (or size {:width 1024 :height 768 :background (color/color :white)})
         title-format (or (:format title) {:font-size 24 :font "Open Sans Bold" :margin 36})]
     (-> (apply plotb/series series)
         (plotb/preprocess-series)
