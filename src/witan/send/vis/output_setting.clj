@@ -64,7 +64,7 @@
                (cycle pal)
                (cycle points)))))
 
-(defn compare-all-settings [{:keys [a-title b-title]} historical-transitions output-setting-a output-setting-b]
+(defn compare-all-settings [{:keys [a-title b-title]} historical-transitions-a historical-transitions-b output-setting-a output-setting-b]
   (let [settings (into (sorted-set) (map :setting) output-setting-a)]
     (into []
           (map (fn [setting]
@@ -73,7 +73,11 @@
                   (wsc/chart-spec-rf
                    {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
                     :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
-                    :legend {:label "Data Sets"}
+                    :legend {:label "Data Sets"
+                             :legend-spec [[:line "Historical"
+                                            {:color :black :stroke {:size 2} :font "Open Sans" :font-size 36}]
+                                           [:line "Projected"
+                                            {:color :black :stroke {:size 2 :dash [2.0]} :font "Open Sans" :font-size 36}]]}
                     :title  {:label (format "Compare %s and %s setting populations for %s" a-title b-title setting)
                              :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}})
                   (vector {:color :blue
@@ -82,7 +86,8 @@
                            :data (wss/maps->line {:x-key :calendar-year
                                                   :y-key :median
                                                   :color :blue
-                                                  :point \s}
+                                                  :point \s
+                                                  :dash [2.0]}
                                                  (filter
                                                   #(= (:setting %) setting)
                                                   output-setting-a))}
@@ -95,13 +100,24 @@
                                                (filter
                                                 #(= (:setting %) setting)
                                                 output-setting-a))}
+                          {:color :blue
+                           :legend-label a-title
+                           :data (wss/maps->ci {:x-key :calendar-year
+                                                :hi-y-key :high-95pc-bound
+                                                :low-y-key :low-95pc-bound
+                                                :color :blue
+                                                :alpha 25}
+                                               (filter
+                                                #(= (:setting %) setting)
+                                                output-setting-a))}
                           {:color :orange
                            :shape \o
                            :legend-label b-title
                            :data (wss/maps->line {:x-key :calendar-year
                                                   :y-key :median
                                                   :color :orange
-                                                  :point \o}
+                                                  :point \o
+                                                  :dash [2.0]}
                                                  (filter
                                                   #(= (:setting %) setting)
                                                   output-setting-b))}
@@ -114,16 +130,38 @@
                                                (filter
                                                 #(= (:setting %) setting)
                                                 output-setting-b))}
-                          {:color :green
+                          {:color :blue
+                           :legend-label b-title
+                           :data (wss/maps->ci {:x-key :calendar-year
+                                                :hi-y-key :high-95pc-bound
+                                                :low-y-key :low-95pc-bound
+                                                :color :orange
+                                                :alpha 25}
+                                               (filter
+                                                #(= (:setting %) setting)
+                                                output-setting-b))}
+                          {:color :blue
                            :legend-label "Historical Transitions"
-                           :shape \+
+                           :shape \s
+                           :hide-legend true
                            :data (wss/maps->line {:x-key :calendar-year
                                                   :y-key :population
-                                                  :color :green
-                                                  :point \+}
+                                                  :color :blue
+                                                  :point \s}
                                                  (filter
                                                   #(= (:setting %) setting)
-                                                  historical-transitions))}))))
+                                                  historical-transitions-a))}
+                          {:color :orange
+                           :legend-label "Historical Transitions"
+                           :shape \o
+                           :hide-legend true
+                           :data (wss/maps->line {:x-key :calendar-year
+                                                  :y-key :population
+                                                  :color :orange
+                                                  :point \o}
+                                                 (filter
+                                                  #(= (:setting %) setting)
+                                                  historical-transitions-b))}))))
           settings)))
 
 ;; dashed projection, solid historical, same colours and points, but
@@ -170,14 +208,14 @@
      settings)))
 
 
-(defn multi-line-and-iqr-with-history [title colors-and-points historical-counts output-setting]
+(defn multi-line-and-iqr-with-history [title settings-lookup colors-and-points historical-counts output-setting]
   (let [settings (into (sorted-set) (map :setting) output-setting)]
     (transduce
      (mapcat
       (fn [setting]
         [{:color (-> setting colors-and-points :color)
           :shape (-> setting colors-and-points :point)
-          :legend-label setting
+          :legend-label (settings-lookup setting setting)
           :data (wss/maps->line {:x-key :calendar-year
                                  :y-key :median
                                  :color (-> setting colors-and-points :color)
@@ -208,7 +246,7 @@
      (wsc/chart-spec-rf
       {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
        :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
-       :legend {:label "Data Sets"
+       :legend {:label "Settings"
                 :legend-spec [[:line "Historical"
                                {:color :black :stroke {:size 2} :font "Open Sans" :font-size 36}]
                               [:line "Projected"

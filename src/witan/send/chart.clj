@@ -32,7 +32,7 @@
       prepped-data)))
 
 (defn zero-y-index [{:keys [x-axis y-axis legend title series size]}]
-  (let [size (or size {:width 1024 :height 768 :background (color/color :white)})
+  (let [size (or size {:width 1539 :height 1037 :background (color/color :white)}) ;; 1539x1037 is almost exactly the right size to go into the slide
         title-format (or (:format title) {:font-size 24 :font "Open Sans Bold" :margin 36})]
     (-> (apply plotb/series series)
         (plotb/preprocess-series)
@@ -40,14 +40,15 @@
         ;;(plotb/update-scale :x :ticks 10)
         (plotb/update-scale :y :fmt (:tick-formatter y-axis))
         (zero-index-numerical-y-axes)
-        (plotb/add-axes :bottom {:ticks {:font-size 18}})
-        (plotb/add-axes :left {:ticks {:font-size 18}})
+        (plotb/add-axes :bottom {:ticks {:font-size 14 :font-style nil}})
+        (plotb/add-axes :left {:ticks {:font-size 14 :font-style nil}})
         (plotb/add-label :bottom (:label x-axis) {:font-size 20 :font "Open Sans" :font-style nil})
         (plotb/add-label :left (:label y-axis) {:font-size 20 :font "Open Sans" :font-style nil})
         (plotb/add-label :top (:label title) title-format)
         (plotb/add-legend (:label legend) (:legend-spec legend))
         (plotr/render-lattice size))))
 
+;; FIXME: Get a passed in dash to work here
 ;; we only add to the legend if it is a line with a point
 (defn add-legend [legend-spec {:keys [legend-label color shape hide-legend]}]
   (if (and shape (not hide-legend))
