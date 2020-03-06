@@ -21,35 +21,6 @@
                    (update :low-ci ->double)
                    (update :high-ci ->double)))))
 
-(defn split-rows-by-domain
-  "Turn a seq of maps into a map keyed by domain that where each key has
-  the value:
-  {:color <a color> :point <a point shape> :data <vector of data points to be mapped>}.
-
-  This can then be filtered aftwards to produce a zoomed in cut of the
-  data. Selecting the keys after using this function will keep the
-  colors and shapes stable across the particular domain."
-  [domain-key statistic setting-data]
-  (let [rows->map (reduce
-                   (fn [acc x]
-                     (update acc (domain-key x) (fnil conj []) [(:calendar-year x) (statistic x)]))
-                   (sorted-map)
-                   setting-data)
-        domain-values (into (sorted-set) (map domain-key) setting-data)
-        colors-and-points (let [pal (color/palette-presets :tableau-20-2)
-                                points [\O \s \o \S \+ \x]]
-                            (into (sorted-map)
-                                  (map (fn [domain-value color point]
-                                         [domain-value {:color color :point point}])
-                                       domain-values
-                                       (cycle pal)
-                                       (cycle points))))]
-    (into (sorted-map)
-          (map (fn [[k data]]
-                 (let [c-n-p (colors-and-points k)]
-                   [k {:data data :color (:color c-n-p) :point (:point c-n-p)}])))
-          rows->map)))
-
 (defn domain-colors-and-points
   "Generate colours and shapes for each setting year so we have
   something consistent"
@@ -163,50 +134,6 @@
                                                   #(= (:setting %) setting)
                                                   historical-transitions-b))}))))
           settings)))
-
-;; dashed projection, solid historical, same colours and points, but
-;; only a black dashed and solid line to say historical/projection and
-;; then colours showing in the legend
-;; output driven by what is in output-setting
-(defn multi-line-with-history [title colors-and-points historical-counts output-setting]
-  (let [settings (into (sorted-set) (map :setting) output-setting)]
-    (transduce
-     (mapcat
-      (fn [setting]
-        [{:color (-> setting colors-and-points :color)
-          :shape (-> setting colors-and-points :point)
-          :legend-label setting
-          :data (wss/maps->line {:x-key :calendar-year
-                                 :y-key :median
-                                 :color (-> setting colors-and-points :color)
-                                 :point (-> setting colors-and-points :point)
-                                 :dash [2.0]}
-                                (filter
-                                 #(= (:setting %) setting)
-                                 output-setting))}
-         {:color (-> setting colors-and-points :color)
-          :shape (-> setting colors-and-points :point)
-          :legend-label (str setting " Historical")
-          :hide-legend true
-          :data (wss/maps->line {:x-key :calendar-year
-                                 :y-key :population
-                                 :color (-> setting colors-and-points :color)
-                                 :point (-> setting colors-and-points :point)}
-                                (filter
-                                 #(= (:setting %) setting)
-                                 historical-counts))}]))
-     (wsc/chart-spec-rf
-      {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
-       :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
-       :legend {:label "Data Sets"
-                :legend-spec [[:line "Historical"
-                               {:color :black :stroke {:size 2} :font "Open Sans" :font-size 36}]
-                              [:line "Projected"
-                               {:color :black :stroke {:size 2 :dash [2.0]} :font "Open Sans" :font-size 36}]]}
-       :title  {:label title
-                :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}})
-     settings)))
-
 
 (defn multi-line-and-iqr-with-history [title settings-lookup colors-and-points historical-counts output-setting]
   (let [settings (into (sorted-set) (map :setting) output-setting)]
