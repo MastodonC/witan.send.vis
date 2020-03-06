@@ -39,6 +39,21 @@
                  transitions)]
     (into t1 t2)))
 
+(defn total-population-per-calendar-year [transitions]
+  (transduce
+   (remove #(= (:setting %) "NONSEND"))
+   (fn
+     ([acc]
+      (sort-by :calendar-year
+               (into []
+                     (map (fn [[calendar-year population]] {:calendar-year calendar-year
+                                                            :population population}))
+                     acc)))
+     ([acc {:keys [calendar-year]}]
+      (update acc calendar-year (fnil inc 0))))
+   {}
+   (->census transitions)))
+
 (defn settings-counts-per-calendar-year [transitions]
   (transduce
    (remove #(= (:setting %) "NONSEND"))

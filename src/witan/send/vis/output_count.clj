@@ -1,5 +1,7 @@
 (ns witan.send.vis.output-count
   (:require [clojure2d.color :as color]
+            [witan.send.chart :as wsc]
+            [witan.send.series :as wss]
             [witan.send.vis.ingest :as ingest :refer [->int ->double csv->]]))
 
 (defn output-count [output-count-file]
@@ -19,55 +21,82 @@
                    (update :low-ci ->double)
                    (update :high-ci ->double)))))
 
-;; ci for each setting: median, q1, q3, high-95pc, low-95pc
-(defn ci-series
-  "Excpects a seq of maps that have median, high-ci, low-ci, and a key
-  passed in for the x-axis"
-  [color point x-key data]
-  [[:ci
-    (vector
-     (into []
-           (map (fn [m]
-                  (vector
-                   (get m x-key) (get m :q3))))
-           data)
-     (into []
-           (map (fn [m]
-                  (vector
-                   (get m x-key) (get m :q1))))
-           data))
-    {:color (color/color color 50)}]
-   [:line (into []
-                (map (fn [m]
-                       (vector
-                        (get m x-key) (get m :median))))
-                data)
-    {:color (color/color color) :point {:type point} :stroke {:size 2}}]])
-
-(defn single-count-ci-chart-spec
-  "Filtered seq of rows containing :median :q1 and :q3"
-  [{:keys [color shape title legend-label data]}]
-  {:x-axis {:tick-formatter int :label "Calendar Year"}
-   :y-axis {:tick-formatter int :label "Population"}
-   :legend {:label "Legend"
-            :legend-spec [[:line legend-label {:color (color/color color) :shape shape :stroke {:size 2} :font "Open Sans"}]]}
-   :title {:label title :format {:font-size 24 :font "Open Sans Bold" :margin 36}}
-   :size {:width 1024 :height 768 :background (color/color :white)}
-   :series (ci-series color shape :calendar-year data)})
-
-(defn multi-count-ci-chart-spec
-  [title count-data-maps]
-  {:x-axis {:tick-formatter int :label "Calendar Year"}
-   :y-axis {:tick-formatter int :label "Population"}
-   :legend {:label "Legend"
-            :legend-spec
-            (into []
-                  (map (fn [{:keys [color shape legend-label]}]
-                         [:line legend-label {:color (color/color color) :shape shape :stroke {:size 2} :font "Open Sans"}]))
-                  count-data-maps)}
-   :title {:label title :format {:font-size 24 :font "Open Sans Bold" :margin 36}}
-   :size {:width 1024 :height 768 :background (color/color :white)}
-   :series (into []
-                 (mapcat (fn [{:keys [color shape data]}]
-                           (ci-series color shape :calendar-year data)))
-                 count-data-maps)})
+(defn compare-populations [{:keys [a-title b-title]} historical-transitions-a historical-transitions-b output-count-a output-count-b]
+  (transduce
+   (map identity)
+   (wsc/chart-spec-rf
+    {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
+     :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
+     :legend {:label "Data Sets"
+              :legend-spec [[:line "Historical"
+                             {:color :black :stroke {:size 2} :font "Open Sans" :font-size 36}]
+                            [:line "Projected"
+                             {:color :black :stroke {:size 2 :dash [2.0]} :font "Open Sans" :font-size 36}]]}
+     :title  {:label (format "Compare %s and %s total populations" a-title b-title)
+              :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}})
+   (vector {:color :blue
+            :shape \s
+            :legend-label a-title
+            :data (wss/maps->line {:x-key :calendar-year
+                                   :y-key :median
+                                   :color :blue
+                                   :point \s
+                                   :dash [2.0]}
+                                  output-count-a)}
+           {:color :blue
+            :legend-label a-title
+            :data (wss/maps->ci {:x-key :calendar-year
+                                 :hi-y-key :q3
+                                 :low-y-key :q1
+                                 :color :blue}
+                                output-count-a)}
+           {:color :blue
+            :legend-label a-title
+            :data (wss/maps->ci {:x-key :calendar-year
+                                 :hi-y-key :high-95pc-bound
+                                 :low-y-key :low-95pc-bound
+                                 :color :blue
+                                 :alpha 25}
+                                output-count-a)}
+           {:color :orange
+            :shape \o
+            :legend-label b-title
+            :data (wss/maps->line {:x-key :calendar-year
+                                   :y-key :median
+                                   :color :orange
+                                   :point \o
+                                   :dash [2.0]}
+                                  output-count-b)}
+           {:color :orange
+            :legend-label b-title
+            :data (wss/maps->ci {:x-key :calendar-year
+                                 :hi-y-key :q3
+                                 :low-y-key :q1
+                                 :color :orange}
+                                output-count-b)}
+           {:color :blue
+            :legend-label b-title
+            :data (wss/maps->ci {:x-key :calendar-year
+                                 :hi-y-key :high-95pc-bound
+                                 :low-y-key :low-95pc-bound
+                                 :color :orange
+                                 :alpha 25}
+                                output-count-b)}
+           {:color :blue
+            :legend-label "Historical Transitions"
+            :shape \s
+            :hide-legend true
+            :data (wss/maps->line {:x-key :calendar-year
+                                   :y-key :population
+                                   :color :blue
+                                   :point \s}
+                                  historical-transitions-a)}
+           {:color :orange
+            :legend-label "Historical Transitions"
+            :shape \o
+            :hide-legend true
+            :data (wss/maps->line {:x-key :calendar-year
+                                   :y-key :population
+                                   :color :orange
+                                   :point \o}
+                                  historical-transitions-b)})))
