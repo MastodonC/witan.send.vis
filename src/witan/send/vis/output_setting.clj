@@ -48,7 +48,11 @@
                              :legend-spec [[:line "Historical"
                                             {:color :black :stroke {:size 2} :font "Open Sans" :font-size 36}]
                                            [:line "Projected"
-                                            {:color :black :stroke {:size 2 :dash [2.0]} :font "Open Sans" :font-size 36}]]}
+                                            {:color :black :stroke {:size 2 :dash [2.0]} :font "Open Sans" :font-size 36}]
+                                           [:rect "Interquartile range"
+                                            {:color (color/set-alpha (color/color :black) 50)}]
+                                           [:rect "90% range"
+                                            {:color (color/set-alpha (color/color :black) 25)}]]}
                     :title  {:label (format "Compare %s and %s setting populations for %s" a-title b-title setting)
                              :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}})
                   (vector {:color :blue
