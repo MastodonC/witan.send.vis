@@ -1,9 +1,7 @@
 (ns witan.send.vis.ingest.transitions
-  (:require [witan.send.vis.ingest :as ingest]
-            [clojure.set :as cs]
-            [witan.send.vis.ingest.transitions :as transitions]))
+  (:require [clojure.set :as cs]
+            [witan.send.vis.ingest :as ingest]))
 
-;; TODO: Add historical transitions to all charts
 (defn historical [transitions-file]
   (ingest/csv-> transitions-file
                 (map #(-> %
@@ -54,6 +52,38 @@
                      acc)))
      ([acc {:keys [calendar-year setting]}]
       (update acc [calendar-year setting] (fnil inc 0))))
+   {}
+   (->census transitions)))
+
+(defn needs-counts-per-calendar-year [transitions]
+  (transduce
+   (remove #(= (:need %) "NONSEND"))
+   (fn
+     ([acc]
+      (sort-by :calendar-year
+               (into []
+                     (map (fn [[[calendar-year need] population]] {:calendar-year calendar-year
+                                                                   :need need
+                                                                   :population population}))
+                     acc)))
+     ([acc {:keys [calendar-year need]}]
+      (update acc [calendar-year need] (fnil inc 0))))
+   {}
+   (->census transitions)))
+
+(defn ay-counts-per-calendar-year [transitions]
+  (transduce
+   (remove #(= (:need %) "NONSEND"))
+   (fn
+     ([acc]
+      (sort-by :calendar-year
+               (into []
+                     (map (fn [[[calendar-year academic-year] population]] {:calendar-year calendar-year
+                                                                            :academic-year academic-year
+                                                                            :population population}))
+                     acc)))
+     ([acc {:keys [calendar-year academic-year]}]
+      (update acc [calendar-year academic-year] (fnil inc 0))))
    {}
    (->census transitions)))
 
