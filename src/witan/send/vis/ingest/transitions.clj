@@ -1,5 +1,7 @@
 (ns witan.send.vis.ingest.transitions
-  (:require [clojure.set :as cs]
+  (:require [clojure.data.csv :as csv]
+            [clojure.java.io :as io]
+            [clojure.set :as cs]
             [witan.send.vis.ingest :as ingest]))
 
 (defn historical [transitions-file]
@@ -8,6 +10,12 @@
                           (update :calendar-year ingest/->int)
                           (update :academic-year-1 ingest/->int)
                           (update :academic-year-2 ingest/->int)))))
+
+(defn ->csv [file-name transitions]
+  (let [header ["calendar-year" "setting-1" "need-1" "academic-year-1" "setting-2" "need-2" "academic-year-2"]
+        extraction-fn (apply juxt (map keyword header))]
+    (with-open [w (io/writer file-name)]
+      (csv/write-csv w (into [header] (mapv extraction-fn transitions))))))
 
 (defn transition-calendar-years [transitions]
   (into (sorted-set)
