@@ -35,6 +35,34 @@
                (cycle pal)
                (cycle points)))))
 
+(defn filter-serie-data [setting serie-spec]
+  (let [orig-data (:data serie-spec)
+        filtered-data (filter
+                       (fn [d]
+                         (= (:setting d) setting))
+                       orig-data)]
+    (assoc serie-spec :data filtered-data)))
+
+(let [foo {:foo [1 2] :bar 2}] (assoc foo :foo (filter even? (:foo foo))))
+
+(defn all-settings [title-fmt-str serie-specs]
+  ;; FIXME: a bit brittle relying on the first for the settings?
+  (let [settings (into (sorted-set) (map :setting) (-> serie-specs first :data))]
+    (into []
+          (map (fn [setting]
+                 (transduce
+                  (comp
+                   (map (partial filter-serie-data setting))
+                   (mapcat wss/serie-and-legend-spec))
+                  (wsc/chart-spec-rf
+                   {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
+                    :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
+                    :legend {:label "Data Sets"
+                             :legend-spec wsc/histogram-base-legend}
+                    :title  {:label (format title-fmt-str setting)}})
+                  serie-specs)))
+          settings)))
+
 (defn compare-all-settings [{:keys [a-title b-title]} historical-transitions-a historical-transitions-b output-setting-a output-setting-b]
   (let [settings (into (sorted-set) (map :setting) output-setting-a)]
     (into []
@@ -178,10 +206,7 @@
       {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
        :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
        :legend {:label "Settings"
-                :legend-spec [[:line "Historical"
-                               {:color :black :stroke {:size 4} :font "Open Sans" :font-size 36}]
-                              [:line "Projected"
-                               {:color :black :stroke {:size 4 :dash [2.0]} :font "Open Sans" :font-size 36}]]}
+                :legend-spec wsc/histogram-base-legend}
        :title  {:label title
                 :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}})
      settings)))
