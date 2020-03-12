@@ -76,11 +76,11 @@
                     :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
                     :legend {:label "Data Sets"
                              :legend-spec [[:line "Historical"
-                                            {:color :black :stroke {:size 2} :font "Open Sans" :font-size 36}]
+                                            {:color :black :stroke {:size 4} :font "Open Sans" :font-size 36}]
                                            [:line "Projected"
-                                            {:color :black :stroke {:size 2 :dash [2.0]} :font "Open Sans" :font-size 36}]]}
+                                            {:color :black :stroke {:size 4 :dash [2.0]} :font "Open Sans" :font-size 36}]]}
                     :title  {:label (format "Compare %s and %s academic-year populations for %s" a-title b-title academic-year)
-                             :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}})
+                             :format {:font-size 36 :font "Open Sans Bold" :margin 36 :font-style :bold}}})
                   (vector {:color :blue
                            :shape \s
                            :legend-label a-title
@@ -205,9 +205,9 @@
        :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
        :legend {:label "Academic-Years"
                 :legend-spec [[:line "Historical"
-                               {:color :black :stroke {:size 2} :font "Open Sans" :font-size 36}]
+                               {:color :black :stroke {:size 4} :font "Open Sans" :font-size 36}]
                               [:line "Projected"
-                               {:color :black :stroke {:size 2 :dash [2.0]} :font "Open Sans" :font-size 36}]]}
+                               {:color :black :stroke {:size 4 :dash [2.0]} :font "Open Sans" :font-size 36}]]}
        :title  {:label title
-                :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}})
+                :format {:font-size 36 :font "Open Sans Bold" :margin 36 :font-style :bold}}})
      academic-years)))

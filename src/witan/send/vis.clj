@@ -59,9 +59,9 @@
         chart-spec (into []
                          (map (fn make-c-and-l
                                 [[[series-name series-data] color point]]
-                                {:legend [:line series-name {:color color :shape point :stroke {:size 2}}]
+                                {:legend [:line series-name {:color color :shape point :stroke {:size 4}}]
                                  :chart [:line series-data {:point {:type point :size 10}
-                                                            :stroke {:size 2}
+                                                            :stroke {:size 4}
                                                             :color color}]}))
                          (sequence
                           (map (fn [data color point] [data color point]))
@@ -156,7 +156,7 @@
                        (vector
                         (get m x-key) (get m :median))))
                 data)
-    {:color (color/color color) :stroke {:size 2}}]])
+    {:color (color/color color) :stroke {:size 4}}]])
 
 (defn historical-and-projected-line-series [color point x-key historical-y-key projected-y-key historical-data projected-data]
   [;; historical
@@ -165,14 +165,14 @@
           (map (fn [m] (vector
                         (get m x-key) (get m historical-y-key))))
           historical-data)
-    {:point {:type point :size 10} :stroke {:size 2} :color color}]
+    {:point {:type point :size 10} :stroke {:size 4} :color color}]
    ;; projected
    [:line
     (into []
           (map (fn [m] (vector
                         (get m x-key) (get m projected-y-key))))
           projected-data)
-    {:point {:type point :size 10} :stroke {:size 2 :dash [4.0]} :color color}]])
+    {:point {:type point :size 10} :stroke {:size 4 :dash [4.0]} :color color}]])
 
 (comment
 
@@ -208,7 +208,7 @@
                        (map (fn make-chart-series
                               [[[series-name series-data] color point]]
                               [:line series-data {:point {:type point :size 10}
-                                                  :stroke {:size 2}
+                                                  :stroke {:size 4}
                                                   :color color}]))
                        (sequence
                         (map (fn [data color point] [data color point]))
@@ -218,7 +218,7 @@
           legend-spec (into []
                             (map (fn make-legend-spec
                                    [[[series-name series-data] color point]]
-                                   [:line series-name {:color color :shape point :stroke {:size 2} :font "Open Sans" :font-size 36}]))
+                                   [:line series-name {:color color :shape point :stroke {:size 4} :font "Open Sans" :font-size 36}]))
                             (sequence
                              (map (fn [data color point] [data color point]))
                              data
@@ -241,8 +241,8 @@
           chart-spec {:x-axis {:tick-formatter int :label "Calendar Year"}
                       :y-axis {:tick-formatter int :label "Population"}
                       :legend {:label ""
-                               :legend-spec [[:line "Capacity" {:color (color/color :red) :stroke {:size 2 :dash [4.0]} :font "Open Sans"}]
-                                             [:line "Population" {:color (color/color :green) :stroke {:size 2} :font "Open Sans"}]]}
+                               :legend-spec [[:line "Capacity" {:color (color/color :red) :stroke {:size 4 :dash [4.0]} :font "Open Sans"}]
+                                             [:line "Population" {:color (color/color :green) :stroke {:size 4} :font "Open Sans"}]]}
                       :title {:label "NCY 0 Projected Population vs Capacity including CI" :format {:font-size 16 :font "Open Sans Bold" :margin 36}}
                       :size {:width 800 :height 600 :background (color/color :white)}
                       :series [[:ci
@@ -261,13 +261,13 @@
                                       (map (fn [{:keys [calendar-year median]}]
                                              (vector calendar-year median)))
                                       filt)
-                                {:color (color/color :green) :stroke {:size 2}}]
+                                {:color (color/color :green) :stroke {:size 4}}]
                                [:line
                                 [[2017 100]
                                  [2018 105]
                                  [2019 105]
                                  [2020 105]]
-                                {:color (color/color :red) :stroke {:size 2 :dash [4.0]}}]
+                                {:color (color/color :red) :stroke {:size 4 :dash [4.0]}}]
                                ]}]
       (plot/show (chart-0-y-index chart-spec))))
 
@@ -279,8 +279,8 @@
           chart-spec {:x-axis {:tick-formatter int :label "Calendar Year"}
                       :y-axis {:tick-formatter int :label "Population"}
                       :legend {:label ""
-                               :legend-spec [[:line "Capacity" {:color (color/color :red) :stroke {:size 2 :dash [4.0]} :font "Open Sans"}]
-                                             [:line "Population" {:color (color/color :green) :stroke {:size 2} :font "Open Sans"}]]}
+                               :legend-spec [[:line "Capacity" {:color (color/color :red) :stroke {:size 4 :dash [4.0]} :font "Open Sans"}]
+                                             [:line "Population" {:color (color/color :green) :stroke {:size 4} :font "Open Sans"}]]}
                       :title {:label "NCY 0 Projected Population vs Capacity including CI" :format {:font-size 16 :font "Open Sans Bold" :margin 36}}
                       :size {:width 1024 :height 768 :background (color/color :white)}
                       :series (ci-series :blue :calendar-year filt)
@@ -290,7 +290,7 @@
                                 [2018 105]
                                 [2019 105]
                                 [2020 105]]
-                               {:color (color/color :blue) :stroke {:size 2 :dash [4.0]}}])}]
+                               {:color (color/color :blue) :stroke {:size 4 :dash [4.0]}}])}]
       (plot/show (chart-0-y-index chart-spec))))
 
   )
@@ -320,7 +320,7 @@
                        (map (fn make-chart-series
                               [[[series-name series-data] color point]]
                               [:line series-data {:point {:type point :size 10}
-                                                  :stroke {:size 2}
+                                                  :stroke {:size 4}
                                                   :color color}]))
                        (sequence
                         (map (fn [data color point] [data color point]))
@@ -330,7 +330,7 @@
           legend-spec (into []
                             (map (fn make-legend-spec
                                    [[[series-name series-data] color point]]
-                                   [:line series-name {:color color :shape point :stroke {:size 2} :font "Open Sans" :font-size 36}]))
+                                   [:line series-name {:color color :shape point :stroke {:size 4} :font "Open Sans" :font-size 36}]))
                             (sequence
                              (map (fn [data color point] [data color point]))
                              data
@@ -369,7 +369,7 @@
                        (map (fn make-chart-series
                               [[[series-name series-data] color point]]
                               [:line series-data {:point {:type point :size 10}
-                                                  :stroke {:size 2}
+                                                  :stroke {:size 4}
                                                   :color color}]))
                        (sequence
                         (map (fn [data color point] [data color point]))
@@ -379,7 +379,7 @@
           legend-spec (into []
                             (map (fn make-legend-spec
                                    [[[series-name series-data] color point]]
-                                   [:line series-name {:color color :shape point :stroke {:size 2} :font "Open Sans" :font-size 36}]))
+                                   [:line series-name {:color color :shape point :stroke {:size 4} :font "Open Sans" :font-size 36}]))
                             (sequence
                              (map (fn [data color point] [data color point]))
                              data

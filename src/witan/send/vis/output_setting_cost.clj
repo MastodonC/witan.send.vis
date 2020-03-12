@@ -47,9 +47,9 @@
                     :y-axis {:tick-formatter vis/millions-formatter :label "Cost (Millions £)" :format {:font-size 24 :font "Open Sans"}}
                     :legend {:label "Data Sets"
                              :legend-spec [[:line "Historical"
-                                            {:color :black :stroke {:size 2} :font "Open Sans" :font-size 36}]
+                                            {:color :black :stroke {:size 4} :font "Open Sans" :font-size 36}]
                                            [:line "Projected"
-                                            {:color :black :stroke {:size 2 :dash [2.0]} :font "Open Sans" :font-size 36}]]}
+                                            {:color :black :stroke {:size 4 :dash [2.0]} :font "Open Sans" :font-size 36}]]}
                     :title  {:label (format "Compare %s and %s setting costs for %s" a-title b-title setting)
                              :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}})
                   (vector {:color :blue

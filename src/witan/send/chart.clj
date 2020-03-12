@@ -33,17 +33,17 @@
 
 (defn zero-y-index [{:keys [x-axis y-axis legend title series size]}]
   (let [size (or size {:width 1539 :height 1037 :background (color/color :white)}) ;; 1539x1037 is almost exactly the right size to go into the slide
-        title-format (or (:format title) {:font-size 24 :font "Open Sans Bold" :margin 36})]
+        title-format (or (:format title) {:font-size 36 :font "Open Sans Bold" :font-style :bold :margin 36})]
     (-> (apply plotb/series series)
         (plotb/preprocess-series)
         (plotb/update-scale :x :fmt (:tick-formatter x-axis))
         ;;(plotb/update-scale :x :ticks 10)
         (plotb/update-scale :y :fmt (:tick-formatter y-axis))
         (zero-index-numerical-y-axes)
-        (plotb/add-axes :bottom {:ticks {:font-size 14 :font-style nil}})
-        (plotb/add-axes :left {:ticks {:font-size 14 :font-style nil}})
-        (plotb/add-label :bottom (:label x-axis) {:font-size 20 :font "Open Sans" :font-style nil})
-        (plotb/add-label :left (:label y-axis) {:font-size 20 :font "Open Sans" :font-style nil})
+        (plotb/add-axes :bottom {:ticks {:font-size 28 :font-style nil}})
+        (plotb/add-axes :left {:ticks {:font-size 28 :font-style nil}})
+        (plotb/add-label :bottom (:label x-axis) {:font-size 36 :font "Open Sans" :font-style nil})
+        (plotb/add-label :left (:label y-axis) {:font-size 36 :font "Open Sans" :font-style nil})
         (plotb/add-label :top (:label title) title-format)
         (plotb/add-legend (:label legend) (:legend-spec legend))
         (plotr/render-lattice size))))
@@ -54,7 +54,7 @@
   (if (and shape (not hide-legend))
     (conj legend-spec
           [:line legend-label
-           {:color color :shape shape :stroke {:size 2} :font "Open Sans" :font-size 36}])
+           {:color color :shape shape :stroke {:size 4} :font "Open Sans" :font-size 36}])
     legend-spec))
 
 (defn chart-spec-rf [chart-spec]

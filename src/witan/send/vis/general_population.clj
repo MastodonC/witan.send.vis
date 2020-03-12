@@ -53,7 +53,7 @@
    :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
    :legend {:label "Population"
             :legend-spec [[:line "Total"
-                           {:color :blue :stroke {:size 2} :shape \^ :font "Open Sans" :font-size 36}]]} ;; flip shape in legend
+                           {:color :blue :stroke {:size 4} :shape \^ :font "Open Sans" :font-size 36}]]} ;; flip shape in legend
    :title  {:label "Total General Population"
             :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}
    :series [(wss/maps->line {:x-key :calendar-year
