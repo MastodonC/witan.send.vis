@@ -43,9 +43,8 @@
                        orig-data)]
     (assoc serie-spec :data filtered-data)))
 
-(let [foo {:foo [1 2] :bar 2}] (assoc foo :foo (filter even? (:foo foo))))
 
-(defn all-settings [title-fmt-str serie-specs]
+(defn all-settings [title-fmt-str settings-lookup serie-specs]
   ;; FIXME: a bit brittle relying on the first for the settings?
   (let [settings (into (sorted-set) (map :setting) (-> serie-specs first :data))]
     (into []
@@ -59,114 +58,11 @@
                     :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
                     :legend {:label "Data Sets"
                              :legend-spec wsc/histogram-base-legend}
-                    :title  {:label (format title-fmt-str setting)}})
+                    :title  {:label (format title-fmt-str (get settings-lookup setting setting))}})
                   serie-specs)))
           settings)))
 
-(defn compare-all-settings [{:keys [a-title b-title]} historical-transitions-a historical-transitions-b output-setting-a output-setting-b]
-  (let [settings (into (sorted-set) (map :setting) output-setting-a)]
-    (into []
-          (map (fn [setting]
-                 (transduce
-                  (map identity)
-                  (wsc/chart-spec-rf
-                   {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
-                    :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
-                    :legend {:label "Data Sets"
-                             :legend-spec [[:line "Historical"
-                                            {:color :black :stroke {:size 4} :font "Open Sans" :font-size 36}]
-                                           [:line "Projected"
-                                            {:color :black :stroke {:size 4 :dash [2.0]} :font "Open Sans" :font-size 36}]
-                                           [:rect "Interquartile range"
-                                            {:color (color/set-alpha (color/color :black) 50)}]
-                                           [:rect "90% range"
-                                            {:color (color/set-alpha (color/color :black) 25)}]]}
-                    :title  {:label (format "Compare %s and %s setting populations for %s" a-title b-title setting)
-                             :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}})
-                  (vector {:color :blue
-                           :shape \s
-                           :legend-label a-title
-                           :data (wss/maps->line {:x-key :calendar-year
-                                                  :y-key :median
-                                                  :color :blue
-                                                  :point \s
-                                                  :dash [2.0]}
-                                                 (filter
-                                                  #(= (:setting %) setting)
-                                                  output-setting-a))}
-                          {:color :blue
-                           :legend-label a-title
-                           :data (wss/maps->ci {:x-key :calendar-year
-                                                :hi-y-key :q3
-                                                :low-y-key :q1
-                                                :color :blue}
-                                               (filter
-                                                #(= (:setting %) setting)
-                                                output-setting-a))}
-                          {:color :blue
-                           :legend-label a-title
-                           :data (wss/maps->ci {:x-key :calendar-year
-                                                :hi-y-key :high-95pc-bound
-                                                :low-y-key :low-95pc-bound
-                                                :color :blue
-                                                :alpha 25}
-                                               (filter
-                                                #(= (:setting %) setting)
-                                                output-setting-a))}
-                          {:color :orange
-                           :shape \o
-                           :legend-label b-title
-                           :data (wss/maps->line {:x-key :calendar-year
-                                                  :y-key :median
-                                                  :color :orange
-                                                  :point \o
-                                                  :dash [2.0]}
-                                                 (filter
-                                                  #(= (:setting %) setting)
-                                                  output-setting-b))}
-                          {:color :orange
-                           :legend-label b-title
-                           :data (wss/maps->ci {:x-key :calendar-year
-                                                :hi-y-key :q3
-                                                :low-y-key :q1
-                                                :color :orange}
-                                               (filter
-                                                #(= (:setting %) setting)
-                                                output-setting-b))}
-                          {:color :blue
-                           :legend-label b-title
-                           :data (wss/maps->ci {:x-key :calendar-year
-                                                :hi-y-key :high-95pc-bound
-                                                :low-y-key :low-95pc-bound
-                                                :color :orange
-                                                :alpha 25}
-                                               (filter
-                                                #(= (:setting %) setting)
-                                                output-setting-b))}
-                          {:color :blue
-                           :legend-label "Historical Transitions"
-                           :shape \s
-                           :hide-legend true
-                           :data (wss/maps->line {:x-key :calendar-year
-                                                  :y-key :population
-                                                  :color :blue
-                                                  :point \s}
-                                                 (filter
-                                                  #(= (:setting %) setting)
-                                                  historical-transitions-a))}
-                          {:color :orange
-                           :legend-label "Historical Transitions"
-                           :shape \o
-                           :hide-legend true
-                           :data (wss/maps->line {:x-key :calendar-year
-                                                  :y-key :population
-                                                  :color :orange
-                                                  :point \o}
-                                                 (filter
-                                                  #(= (:setting %) setting)
-                                                  historical-transitions-b))}))))
-          settings)))
-
+;; FIXME: Make me work like all-settings
 (defn multi-line-and-iqr-with-history [title settings-lookup colors-and-points historical-counts output-setting]
   (let [settings (into (sorted-set) (map :setting) output-setting)]
     (transduce
@@ -207,6 +103,5 @@
        :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
        :legend {:label "Settings"
                 :legend-spec wsc/histogram-base-legend}
-       :title  {:label title
-                :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}})
+       :title  {:label title}})
      settings)))

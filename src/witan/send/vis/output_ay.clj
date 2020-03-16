@@ -177,7 +177,7 @@
       {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
        :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
        :legend {:label "Academic-Years"
-                :legend-spec wsc/histogram-base-legend}
+                :legend-spec wsc/historical-projected-legend}
        :title  {:label title
                 :format {:font-size 36 :font "Open Sans Bold" :margin 36 :font-style :bold}}})
      academic-years)))

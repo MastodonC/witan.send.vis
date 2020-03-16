@@ -95,3 +95,9 @@
     {:color (color/set-alpha (color/color :black) 50)}]
    [:rect "90% range"
     {:color (color/set-alpha (color/color :black) 25)}]])
+
+(def historical-projected-legend
+  [[:line "Historical"
+    {:color :black :stroke {:size 4} :font "Open Sans" :font-size 36}]
+   [:line "Projected"
+    {:color :black :stroke {:size 4 :dash [2.0]} :font "Open Sans" :font-size 36}]])
