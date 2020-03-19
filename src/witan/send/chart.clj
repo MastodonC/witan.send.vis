@@ -3,20 +3,30 @@
             [cljplot.core :as plot]
             [cljplot.render :as plotr]
             [clojure.string :as s]
-            [clojure2d.color :as color]))
+            [clojure2d.color :as color]
+            [witan.send.series :as wss]))
 
 (def orange (nth (color/palette-presets :tableau-20) 2))
 (def blue (nth (color/palette-presets :tableau-20) 5))
 (def green (nth (color/palette-presets :tableau-20) 4))
 (def palette (color/palette-presets :tableau-20))
-(def points [\s \^ \o])
+(def points [\V \\
+             \^ \+
+             \O \/
+             \s \x
+             \A \+
+             \o \v
+             \S])
 
 
-(defn domain-colors-and-points [domain-key data]
+(defn domain-colors-and-points
+  "Generate colours and shapes for each setting year so we have
+  something consistent"
+  [domain-key data]
   (let [domain (into (sorted-set) (map domain-key) data)]
     (into (sorted-map)
-          (map (fn [academic-year color point]
-                 [academic-year {:color color :point point}])
+          (map (fn [domain-value color point]
+                 [domain-value {:color color :point point}])
                domain
                (cycle palette)
                (cycle points)))))
@@ -50,7 +60,7 @@
 (defn zero-y-index [{:keys [x-axis y-axis legend title series size]}]
   (let [size (or size {:width 1539 :height 1037 :background (color/color :white)}) ;; 1539x1037 is almost exactly the right size to go into the slide
         title-format (or (:format title) {:font-size 36 :font "Open Sans Bold" :font-style :bold :margin 36})]
-    (-> (apply plotb/series series)
+    (-> (apply plotb/series (into [[:grid]] series))
         (plotb/preprocess-series)
         (plotb/update-scale :x :fmt (:tick-formatter x-axis))
         ;;(plotb/update-scale :x :ticks 10)
@@ -69,8 +79,9 @@
 (defn add-legend [legend-spec {:keys [legend-label color shape hide-legend]}]
   (if (and shape (not hide-legend))
     (conj legend-spec
-          [:line legend-label
-           {:color color :shape shape :stroke {:size 4} :font "Open Sans" :font-size 36}])
+          [:shape legend-label {:color color :shape shape :size 15 :stroke {:size 4.0}}]
+          #_[:line legend-label
+             {:color color :shape shape :stroke {:size 4} :font "Open Sans" :font-size 36}])
     legend-spec))
 
 (defn chart-spec-rf [chart-spec]
@@ -101,3 +112,71 @@
     {:color :black :stroke {:size 4} :font "Open Sans" :font-size 36}]
    [:line "Projected"
     {:color :black :stroke {:size 4 :dash [2.0]} :font "Open Sans" :font-size 36}]])
+
+(defn base-chart-spec [{:keys [x-tick-fomatter y-tick-formatter x-label y-label legend-label title]}]
+  {:x-axis {:tick-formatter (or x-tick-fomatter int) :label (or x-label "Calendar Year") :format {:font-size 24 :font "Open Sans"}}
+   :y-axis {:tick-formatter (or y-tick-formatter int) :label (or y-label "Population") :format {:font-size 24 :font "Open Sans"}}
+   :legend {:label (or legend-label "Data Sets")
+            :legend-spec histogram-base-legend}
+   :title  {:label title}})
+
+(defn filter-serie-data [domain-key domain-value serie-spec]
+  (let [orig-data (:data serie-spec)
+        filtered-data (filter
+                       (fn [d]
+                         (= (domain-key d) domain-value))
+                       orig-data)]
+    (assoc serie-spec :data filtered-data)))
+
+
+(defn all-domain-xf [domain-key domain-value]
+  (comp
+   (map (partial filter-serie-data domain-key domain-value))
+   (mapcat wss/serie-and-legend-spec)))
+
+(defn multi-line-and-iqr-with-history-xf
+  [{:keys [domain-key domain-values-lookup colors-and-points historical-counts projected-data y-key]}]
+  (comp
+   (mapcat (fn [domain-value]
+             (if historical-counts
+               [{:color (-> domain-value colors-and-points :color)
+                 :legend-label (get domain-values-lookup domain-value domain-value)
+                 :shape (-> domain-value colors-and-points :point)
+                 :projection true
+                 :hide-legend false
+                 :data (filter
+                        #(= (domain-key %) domain-value)
+                        projected-data)}
+                {:color (-> domain-value colors-and-points :color)
+                 :legend-label (get domain-values-lookup domain-value domain-value)
+                 :shape (-> domain-value colors-and-points :point)
+                 :projection false
+                 :hide-legend true
+                 :y-key (or y-key :population)
+                 :data (filter
+                        #(= (domain-key %) domain-value)
+                        historical-counts)}]
+               [{:color (-> domain-value colors-and-points :color)
+                 :legend-label (get domain-values-lookup domain-value domain-value)
+                 :shape (-> domain-value colors-and-points :point)
+                 :projection true
+                 :hide-legend false
+                 :data (filter
+                        #(= (domain-key %) domain-value)
+                        projected-data)}])))
+   (mapcat wss/serie-and-legend-spec)))
+
+(defn multi-line-actual-xf
+  [{:keys [domain-key domain-values-lookup colors-and-points data y-key hide-legend]}]
+  (comp
+   (mapcat (fn [domain-value]
+             [{:color (-> domain-value colors-and-points :color)
+               :legend-label (get domain-values-lookup domain-value domain-value)
+               :shape (-> domain-value colors-and-points :point)
+               :projection false
+               :hide-legend (or hide-legend false)
+               :y-key (or y-key :population)
+               :data (filter
+                      #(= (domain-key %) domain-value)
+                      data)}]))
+   (mapcat wss/serie-and-legend-spec)))

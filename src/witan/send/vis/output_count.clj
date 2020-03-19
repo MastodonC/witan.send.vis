@@ -24,9 +24,5 @@
   (transduce
    (mapcat wss/serie-and-legend-spec)
    (wsc/chart-spec-rf
-    {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
-     :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
-     :legend {:label "Data Sets"
-              :legend-spec wsc/histogram-base-legend}
-     :title  {:label title}})
+    (wsc/base-chart-spec {:title title :legend "Data Sets"}))
    serie-specs))

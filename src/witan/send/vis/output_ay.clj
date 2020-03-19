@@ -1,7 +1,5 @@
 (ns witan.send.vis.output-ay
-  (:require [clojure2d.color :as color]
-            [witan.send.chart :as wsc]
-            [witan.send.series :as wss]
+  (:require [witan.send.chart :as wsc]
             [witan.send.vis.ingest :as ingest :refer [->int ->double csv->]]))
 
 (defn output-ay [output-ay-file]
@@ -51,133 +49,27 @@
     (further-education? y) :further-education))
 
 
-(defn compare-all-academic-years [{:keys [a-title b-title]} historical-transitions-a historical-transitions-b output-academic-year-a output-academic-year-b]
-  (let [academic-years (into (sorted-set) (map :academic-year) output-academic-year-a)]
+(defn all-academic-years [{:keys [title-fmt-str domain-lookup serie-specs]}]
+  (let [academic-years (into (sorted-set) (map :academic-year) (-> serie-specs first :data))]
     (into []
           (map (fn [academic-year]
                  (transduce
-                  (map identity)
+                  (wsc/all-domain-xf :academic-year academic-year)
                   (wsc/chart-spec-rf
-                   {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
-                    :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
-                    :legend {:label "Data Sets"
-                             :legend-spec wsc/histogram-base-legend}
-                    :title  {:label (format "Compare %s and %s academic-year populations for %s" a-title b-title academic-year)
-                             :format {:font-size 36 :font "Open Sans Bold" :margin 36 :font-style :bold}}})
-                  (vector {:color wsc/blue
-                           :shape \s
-                           :legend-label a-title
-                           :data (wss/maps->line {:x-key :calendar-year
-                                                  :y-key :median
-                                                  :color wsc/blue
-                                                  :point \s
-                                                  :dash [2.0]}
-                                                 (filter
-                                                  #(= (:academic-year %) academic-year)
-                                                  output-academic-year-a))}
-                          {:color wsc/blue
-                           :legend-label a-title
-                           :data (wss/maps->ci {:x-key :calendar-year
-                                                :hi-y-key :q3
-                                                :low-y-key :q1
-                                                :color wsc/blue}
-                                               (filter
-                                                #(= (:academic-year %) academic-year)
-                                                output-academic-year-a))}
-                          {:color wsc/blue
-                           :legend-label a-title
-                           :data (wss/maps->ci {:x-key :calendar-year
-                                                :hi-y-key :high-95pc-bound
-                                                :low-y-key :low-95pc-bound
-                                                :color wsc/blue
-                                                :alpha 25}
-                                               (filter
-                                                #(= (:academic-year %) academic-year)
-                                                output-academic-year-a))}
-                          {:color wsc/orange
-                           :shape \o
-                           :legend-label b-title
-                           :data (wss/maps->line {:x-key :calendar-year
-                                                  :y-key :median
-                                                  :color wsc/orange
-                                                  :point \o
-                                                  :dash [2.0]}
-                                                 (filter
-                                                  #(= (:academic-year %) academic-year)
-                                                  output-academic-year-b))}
-                          {:color wsc/orange
-                           :legend-label b-title
-                           :data (wss/maps->ci {:x-key :calendar-year
-                                                :hi-y-key :q3
-                                                :low-y-key :q1
-                                                :color wsc/orange}
-                                               (filter
-                                                #(= (:academic-year %) academic-year)
-                                                output-academic-year-b))}
-                          {:color wsc/blue
-                           :legend-label b-title
-                           :data (wss/maps->ci {:x-key :calendar-year
-                                                :hi-y-key :high-95pc-bound
-                                                :low-y-key :low-95pc-bound
-                                                :color wsc/orange
-                                                :alpha 25}
-                                               (filter
-                                                #(= (:academic-year %) academic-year)
-                                                output-academic-year-b))}
-                          {:color wsc/blue
-                           :legend-label "Historical Transitions"
-                           :shape \s
-                           :hide-legend true
-                           :data (wss/maps->line {:x-key :calendar-year
-                                                  :y-key :population
-                                                  :color wsc/blue
-                                                  :point \s}
-                                                 (filter
-                                                  #(= (:academic-year %) academic-year)
-                                                  historical-transitions-a))}
-                          {:color wsc/orange
-                           :legend-label "Historical Transitions"
-                           :shape \o
-                           :hide-legend true
-                           :data (wss/maps->line {:x-key :calendar-year
-                                                  :y-key :population
-                                                  :color wsc/orange
-                                                  :point \o}
-                                                 (filter
-                                                  #(= (:academic-year %) academic-year)
-                                                  historical-transitions-b))}))))
+                   (wsc/base-chart-spec
+                    {:title (format title-fmt-str (get domain-lookup academic-year academic-year))}))
+                  serie-specs)))
           academic-years)))
 
 (defn multi-line-and-iqr-with-history [title academic-years-lookup colors-and-points historical-counts output-academic-year]
   (let [academic-years (into (sorted-set) (map :academic-year) output-academic-year)]
     (transduce
-     (comp
-      (mapcat (fn [academic-year]
-                [;; The Projection
-                 {:color (-> academic-year colors-and-points :color)
-                  :shape (-> academic-year colors-and-points :point)
-                  :projection true
-                  :legend-label (academic-years-lookup academic-year academic-year)
-                  :hide-legend false
-                  :data (filter
-                         #(= (:academic-year %) academic-year)
-                         output-academic-year)}
-                 ;; The History
-                 {:color (-> academic-year colors-and-points :color)
-                  :shape (-> academic-year colors-and-points :point)
-                  :projection false
-                  :legend-label (academic-years-lookup academic-year academic-year)
-                  :hide-legend true
-                  :y-key :population
-                  :data (filter
-                         #(= (:academic-year %) academic-year)
-                         historical-counts)}]))
-      (mapcat wss/serie-and-legend-spec))
+     (wsc/multi-line-and-iqr-with-history-xf
+      {:domain-key :academic-year
+       :domain-values-lookup academic-years-lookup
+       :colors-and-points colors-and-points
+       :historical-counts historical-counts
+       :projected-data output-academic-year})
      (wsc/chart-spec-rf
-      {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
-       :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
-       :legend {:label "Academic-Years"
-                :legend-spec wsc/historical-projected-legend}
-       :title  {:label title
-                :format {:font-size 36 :font "Open Sans Bold" :margin 36 :font-style :bold}}})
+      (wsc/base-chart-spec {:title title :legend "Academic Years"}))
      academic-years)))
