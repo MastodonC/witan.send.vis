@@ -11,12 +11,14 @@
 (def green (nth (color/palette-presets :tableau-20) 4))
 (def palette (color/palette-presets :tableau-20))
 (def points [\V \\
-             \^ \+
+             \^ \|
              \O \/
              \s \x
-             \A \+
-             \o \v
-             \S])
+             \A \o
+             \v \S
+             \{ \>
+             \< \}
+             \-])
 
 
 (defn domain-colors-and-points
