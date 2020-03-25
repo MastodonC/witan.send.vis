@@ -2,6 +2,8 @@
   (:require [witan.send.chart :as wsc]
             [witan.send.vis.ingest :as ingest :refer [->int ->double csv->]]))
 
+(def output-setting-file "Output_Setting.csv")
+
 (defn output-setting [output-setting-file]
   (csv-> output-setting-file
          (map #(-> %

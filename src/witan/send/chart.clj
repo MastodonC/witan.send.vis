@@ -86,15 +86,6 @@
              {:color color :shape shape :stroke {:size 4} :font "Open Sans" :font-size 36}])
     legend-spec))
 
-(defn chart-spec-rf [chart-spec]
-  (fn
-    ([] chart-spec)
-    ([a] a) ;; put chartingf and title->filename here and return a map with the {:chart foo :filename bar :chart-spec chart-spec} here?
-    ([a {:keys [color shape legend-label data] :as series-spec}]
-     (-> a
-         (update :series conj data)
-         (update-in [:legend :legend-spec] add-legend series-spec)))))
-
 (defn save-chart-by-title [prefix chartingf chart-spec]
   (plot/save (chartingf chart-spec) (str prefix (title->filename (-> chart-spec :title :label))))
   chart-spec)
@@ -115,12 +106,21 @@
    [:line "Projected"
     {:color :black :stroke {:size 4 :dash [2.0]} :font "Open Sans" :font-size 36}]])
 
-(defn base-chart-spec [{:keys [x-tick-fomatter y-tick-formatter x-label y-label legend-label title]}]
-  {:x-axis {:tick-formatter (or x-tick-fomatter int) :label (or x-label "Calendar Year") :format {:font-size 24 :font "Open Sans"}}
-   :y-axis {:tick-formatter (or y-tick-formatter int) :label (or y-label "Population") :format {:font-size 24 :font "Open Sans"}}
-   :legend {:label (or legend-label "Data Sets")
-            :legend-spec histogram-base-legend}
-   :title  {:label title}})
+(defn base-chart-spec
+  [{:keys [title chartf x-tick-fomatter y-tick-formatter x-label y-label legend-label legend-spec]
+    :or {chartf zero-y-index
+         x-tick-fomatter int
+         y-tick-formatter int
+         x-label "Calendar Year"
+         y-label "Population"
+         legend-label "Data Sets"
+         legend-spec histogram-base-legend}}]
+  {:title  {:label title}
+   :x-axis {:tick-formatter x-tick-fomatter :label x-label :format {:font-size 24 :font "Open Sans"}}
+   :y-axis {:tick-formatter y-tick-formatter :label y-label :format {:font-size 24 :font "Open Sans"}}
+   :legend {:label legend-label
+            :legend-spec legend-spec}
+   :chartf chartf})
 
 (defn filter-serie-data [domain-key domain-value serie-spec]
   (let [orig-data (:data serie-spec)
@@ -182,3 +182,99 @@
                       #(= (domain-key %) domain-value)
                       data)}]))
    (mapcat wss/serie-and-legend-spec)))
+
+(defn legend-shape [serie-shape]
+  (case serie-shape
+    \^ \v
+    \A \V
+    \v \^
+    \V \A
+    \\ \/
+    \/ \\
+    serie-shape))
+
+(defn comparison-series-defs
+  "Turn a single comparison def into a seq of series defs. One
+  historical line, one projected line, one projected iqr, one
+  projected 90%"
+  [{:keys [legend-label color shape
+           projection-data
+           historical-data historical-y-key]
+    :as comparison-def}]
+  (into []
+        (concat
+         (when projection-data
+           [;; projection median
+            {:legend-label legend-label
+             :color color
+             :shape (legend-shape shape)
+             :hide-legend false
+             :data (wss/maps->line {:x-key :calendar-year
+                                    :y-key :median
+                                    :color color
+                                    :point shape
+                                    :dash [2.0]}
+                                   projection-data)}
+            ;; projection iqr
+            {:legend-label legend-label
+             :color color
+             :hide-legend true
+             :data (wss/maps->ci {:x-key :calendar-year
+                                  :hi-y-key :q3
+                                  :low-y-key :q1
+                                  :color color}
+                                 projection-data)}
+            ;; projection 95%
+            {:legend-label legend-label
+             :color color
+             :hide-legend true
+             :data (wss/maps->ci {:x-key :calendar-year
+                                  :hi-y-key :high-95pc-bound
+                                  :low-y-key :low-95pc-bound
+                                  :color color
+                                  :alpha 25}
+                                 projection-data)}])
+         (when historical-data
+           [;; history
+            {:legend-label legend-label
+             :color color
+             :shape (legend-shape shape)
+             :hide-legend true
+             :data (wss/maps->line {:x-key :calendar-year
+                                    :y-key historical-y-key
+                                    :color color
+                                    :point shape}
+                                   historical-data)}]))))
+
+
+(defn chart-spec-rf [{:keys [chartf title] :as chart-spec}]
+  (fn
+    ([] chart-spec)
+    ([a] {:chart-def a
+          :chart-image (chartf a)
+          :filename (title->filename (:label title))})
+    ([a {:keys [color shape legend-label data] :as series-spec}]
+     (-> a
+         (update :series conj data)
+         (update-in [:legend :legend-spec] add-legend series-spec)))))
+
+(defn comparison-chart [{:keys [title chartf
+                                x-axis-label x-axis-formatter
+                                y-axis-label y-axis-formatter
+                                domain-key domain-values-lookup
+                                series] :as comparison-defs}]
+  (assoc comparison-defs
+         :chart
+         (transduce
+          (mapcat comparison-series-defs)
+          (chart-spec-rf
+           (base-chart-spec ;; FIXME some kind of merge if not nil
+            {:title title :chartf chartf}))
+          series)))
+
+
+(defn comparison-table [comparison-defs]
+  "Turn comparison definitions into seqs of maps to be output as
+  tables."
+  )
+
