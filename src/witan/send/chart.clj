@@ -4,7 +4,12 @@
             [cljplot.render :as plotr]
             [clojure.string :as s]
             [clojure2d.color :as color]
-            [witan.send.series :as wss]))
+            [dk.ative.docjure.spreadsheet :as xl]
+            [witan.send.series :as wss])
+  (:import javax.imageio.ImageIO
+           java.awt.image.BufferedImage
+           java.io.ByteArrayOutputStream
+           org.apache.poi.ss.usermodel.Workbook))
 
 (def orange (nth (color/palette-presets :tableau-20) 2))
 (def blue (nth (color/palette-presets :tableau-20) 5))
@@ -86,10 +91,6 @@
              {:color color :shape shape :stroke {:size 4} :font "Open Sans" :font-size 36}])
     legend-spec))
 
-(defn save-chart-by-title [prefix chartingf chart-spec]
-  (plot/save (chartingf chart-spec) (str prefix (title->filename (-> chart-spec :title :label))))
-  chart-spec)
-
 (def histogram-base-legend
   [[:line "Historical"
     {:color :black :stroke {:size 4} :font "Open Sans" :font-size 36}]
@@ -107,20 +108,23 @@
     {:color :black :stroke {:size 4 :dash [2.0]} :font "Open Sans" :font-size 36}]])
 
 (defn base-chart-spec
-  [{:keys [title chartf x-tick-fomatter y-tick-formatter x-label y-label legend-label legend-spec]
+  [{:keys [title chartf x-tick-formatter y-tick-formatter x-axis-label y-axis-label legend-label legend-spec]
     :or {chartf zero-y-index
-         x-tick-fomatter int
+         x-tick-formatter int
          y-tick-formatter int
-         x-label "Calendar Year"
-         y-label "Population"
+         x-axis-label "Calendar Year"
+         y-axis-label "Population"
          legend-label "Data Sets"
          legend-spec histogram-base-legend}}]
   {:title  {:label title}
-   :x-axis {:tick-formatter x-tick-fomatter :label x-label :format {:font-size 24 :font "Open Sans"}}
-   :y-axis {:tick-formatter y-tick-formatter :label y-label :format {:font-size 24 :font "Open Sans"}}
+   :x-axis {:tick-formatter x-tick-formatter :label x-axis-label :format {:font-size 24 :font "Open Sans"}}
+   :y-axis {:tick-formatter y-tick-formatter :label y-axis-label :format {:font-size 24 :font "Open Sans"}}
    :legend {:label legend-label
             :legend-spec legend-spec}
    :chartf chartf})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Old chart code
 
 (defn filter-serie-data [domain-key domain-value serie-spec]
   (let [orig-data (:data serie-spec)
@@ -182,6 +186,9 @@
                       #(= (domain-key %) domain-value)
                       data)}]))
    (mapcat wss/serie-and-legend-spec)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Refactored Charts below
 
 (defn legend-shape [serie-shape]
   (case serie-shape
@@ -247,7 +254,7 @@
                                    historical-data)}]))))
 
 
-(defn chart-spec-rf [{:keys [chartf title] :as chart-spec}]
+(defn chart-spec-rf [{:keys [chartf title] :or {chartf zero-y-index} :as chart-spec}]
   (fn
     ([] chart-spec)
     ([a] {:chart-def a
@@ -258,23 +265,100 @@
          (update :series conj data)
          (update-in [:legend :legend-spec] add-legend series-spec)))))
 
-(defn comparison-chart [{:keys [title chartf
-                                x-axis-label x-axis-formatter
-                                y-axis-label y-axis-formatter
-                                domain-key domain-values-lookup
-                                series] :as comparison-defs}]
-  (assoc comparison-defs
-         :chart
-         (transduce
-          (mapcat comparison-series-defs)
-          (chart-spec-rf
-           (base-chart-spec ;; FIXME some kind of merge if not nil
-            {:title title :chartf chartf}))
-          series)))
+(defn comparison-chart [{:keys [series] :as comparison-defs}]
+  (transduce
+   (mapcat comparison-series-defs)
+   (chart-spec-rf
+    (base-chart-spec
+     (select-keys comparison-defs [:title :chartf
+                                   :x-tick-formatter :y-tick-formatter
+                                   :x-axis-label :y-axis-label
+                                   :legend-label :legend-spec])))
+   series))
 
 
-(defn comparison-table [comparison-defs]
-  "Turn comparison definitions into seqs of maps to be output as
-  tables."
-  )
+(defn comparison-table
+  "Turn comparison definition data into a vector of vectors for csv or excel output"
+  [{:keys [series domain-key y-axis-label x-axis-label] :as comparison-defs}]
+  (into [["label"
+          (name domain-key)
+          x-axis-label
+          y-axis-label
+          "min" "low 95pc bound" "q1" "median" "q3" "high 95pc bound" "max" "iqr"]]
+        (comp
+         (map (fn [{:keys [legend-label projection-data historical-data]}]
+                {:historical-data (into [] (map (fn [record] (assoc record :label legend-label))) historical-data)
+                 :projection-data (into [] (map (fn [record] (assoc record :label legend-label))) projection-data)}))
+         (mapcat (juxt :historical-data :projection-data))
+         cat
+         (map (juxt :label
+                    domain-key
+                    :calendar-year
+                    :population
+                    :min :low-95pc-bound :q1 :median :q3 :high-95pc-bound :max :iqr)))
+        series))
 
+(defn comparison-chart-and-table [comparison-defs]
+  (-> comparison-defs
+      (assoc :chart (comparison-chart comparison-defs))
+      (assoc :table (comparison-table comparison-defs))))
+
+(defn domain-charts [{:keys [domain-key chart-base-def serie-base-def colors-and-points historical-data projection-data]} titles-and-sets]
+  (into []
+        (comp
+         (map (fn [[title domain-values]]
+                (assoc
+                 chart-base-def
+                 :title title
+                 :series
+                 (into []
+                       (map (fn [domain-value]
+                              (merge serie-base-def
+                                     {:legend-label domain-value
+                                      :color (-> domain-value colors-and-points :color)
+                                      :shape (-> domain-value colors-and-points :point)
+                                      :projection-data (into [] (filter #(= domain-value (domain-key %))) projection-data)
+                                      :historical-data (into [] (filter #(= domain-value (domain-key %))) historical-data)})))
+                       domain-values))))
+         (map comparison-chart-and-table))
+        titles-and-sets))
+
+(defn ->byte-array [^BufferedImage image]
+  (with-open [out (java.io.ByteArrayOutputStream.)]
+    (ImageIO/write image "png" out)
+    (.toByteArray out)))
+
+(defn ->workbook [comparison-defs]
+  (let [wb-data (into []
+                      (mapcat (fn [cd]
+                                [(:title cd)
+                                 (:table cd)]))
+                      comparison-defs)
+        wb-charts (into []
+                        (map (fn [cd]
+                               [(:title cd)
+                                (-> cd :chart :chart-image :buffer ->byte-array)]))
+                        comparison-defs)
+        wb (apply xl/create-workbook wb-data)]
+    (run! (fn [[sheet-name img]]
+            (let [;; int pictureIdx = wb.addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
+                  pic-idx (.addPicture wb img Workbook/PICTURE_TYPE_PNG)
+                  sheet (xl/select-sheet sheet-name wb)
+                  helper (.getCreationHelper wb)
+                  drawing (.createDrawingPatriarch sheet)
+                  anchor (.createClientAnchor helper)
+                  _ (.setCol1 anchor 14)
+                  _ (.setRow1 anchor 2)
+                  ;; Picture pict = drawing.createPicture(anchor, pictureIdx);
+                  ;; pict.resize();
+                  pict (.createPicture drawing anchor pic-idx)]
+              (.resize pict)))
+          wb-charts)
+    wb))
+
+(defn save-chart-by-title [prefix comparison-def]
+  (plot/save (-> comparison-def :chart :chart-image) (str prefix (title->filename (-> comparison-def :chart :chart-def :title :label))))
+  comparison-def)
+
+(defn save-workbook [file-name wb]
+  (xl/save-workbook! file-name wb))

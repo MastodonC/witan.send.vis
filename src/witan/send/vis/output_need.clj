@@ -1,8 +1,29 @@
 (ns witan.send.vis.output-need
-  (:require [clojure2d.color :as color]
-            [witan.send.chart :as wsc]
-            [witan.send.series :as wss]
+  (:require [witan.send.chart :as wsc]
             [witan.send.vis.ingest :as ingest :refer [->int ->double csv->]]))
+
+(def output-need-file "Output_Need.csv")
+
+(defn base-need-chart-def [domain-values-lookup]
+  {:legend-label "Needs"
+   :domain-key :need
+   :domain-values-lookup domain-values-lookup
+   :x-axis-label "Calendar Year" :x-tick-formatter int
+   :y-axis-label "Population" :y-tick-formatter int
+   :chartf wsc/zero-y-index})
+
+(def base-need-serie-def {:historical-y-key :population})
+
+(defn charts
+  ([needs-lookup historical-data projection-data titles-and-sets]
+   (let [domain-key :need]
+     (wsc/domain-charts {:domain-key domain-key
+                         :chart-base-def (base-need-chart-def needs-lookup)
+                         :serie-base-def base-need-serie-def
+                         :colors-and-points (wsc/domain-colors-and-points domain-key projection-data)
+                         :historical-data historical-data
+                         :projection-data projection-data}
+                        titles-and-sets))))
 
 (defn output-need [output-need-file]
   (csv-> output-need-file
@@ -20,28 +41,3 @@
                    (update :max ->double)
                    (update :low-ci ->double)
                    (update :high-ci ->double)))))
-
-(defn all-needs [{:keys [title-fmt-str domain-lookup serie-specs]}]
-  (let [needs (into (sorted-set) (map :need) (-> serie-specs first :data))]
-    (into []
-          (map (fn [need]
-                 (transduce
-                  (wsc/all-domain-xf :need need)
-                  (wsc/chart-spec-rf
-                   (wsc/base-chart-spec
-                    {:title (format title-fmt-str (get domain-lookup need need))}))
-                  serie-specs)))
-          needs)))
-
-(defn multi-line-and-iqr-with-history [title needs-lookup colors-and-points historical-counts output-need]
-  (let [needs (into (sorted-set) (map :need) output-need)]
-    (transduce
-     (wsc/multi-line-and-iqr-with-history-xf
-      {:domain-key :need
-       :domain-values-lookup needs-lookup
-       :colors-and-points colors-and-points
-       :historical-counts historical-counts
-       :projected-data output-need})
-     (wsc/chart-spec-rf
-      (wsc/base-chart-spec {:title title :legend "Needs"}))
-     needs)))

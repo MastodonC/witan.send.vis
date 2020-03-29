@@ -4,6 +4,8 @@
             [witan.send.vis :as vis]
             [witan.send.vis.ingest :as ingest :refer [->int ->double csv->]]))
 
+(def output-cost-file "Output_Cost.csv")
+
 (defn output-cost [output-cost-file]
   (csv-> output-cost-file
          (map #(-> %
@@ -21,9 +23,20 @@
                    (update :low-ci ->double)
                    (update :high-ci ->double)))))
 
-(defn send-costs [title serie-specs]
-  (transduce
-   (mapcat wss/serie-and-legend-spec)
-   (wsc/chart-spec-rf
-    (wsc/base-chart-spec {:title title :legend "Data Sets" :y-tick-formatter vis/millions-formatter :y-label "Cost (Millions £)"}))
-   serie-specs))
+(def base-cost-comparison-chart-def
+  {:legend-label "Data Sets"
+   :domain-key :cost
+   :x-axis-label "Calendar Year"
+   :y-tick-formatter vis/millions-formatter
+   :y-axis-label "Cost (Millions £)"})
+
+(defn chart [title projection-data]
+  (let [chart-base base-cost-comparison-chart-def]
+    [(assoc
+      chart-base
+      :title title
+      :series
+      [{:legend-label "2020 Baseline"
+        :color wsc/blue
+        :shape \A
+        :projection-data projection-data}])]))

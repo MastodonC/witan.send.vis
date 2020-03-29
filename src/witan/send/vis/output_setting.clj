@@ -4,6 +4,28 @@
 
 (def output-setting-file "Output_Setting.csv")
 
+(defn base-setting-chart-def [domain-values-lookup]
+  {:legend-label "Settings"
+   :domain-key :setting
+   :domain-values-lookup domain-values-lookup
+   :x-axis-label "Calendar Year" :x-tick-formatter int
+   :y-axis-label "Population" :y-tick-formatter int
+   :chartf wsc/zero-y-index})
+
+(def base-setting-serie-def {:historical-y-key :population})
+
+(defn charts
+  ([settings-lookup historical-data projection-data titles-and-sets]
+   (let [domain-key :setting]
+     (wsc/domain-charts {:domain-key domain-key
+                         :chart-base-def (base-setting-chart-def settings-lookup)
+                         :serie-base-def base-setting-serie-def
+                         :colors-and-points (wsc/domain-colors-and-points domain-key projection-data)
+                         :historical-data historical-data
+                         :projection-data projection-data}
+                        titles-and-sets))))
+
+
 (defn output-setting [output-setting-file]
   (csv-> output-setting-file
          (map #(-> %
@@ -21,27 +43,4 @@
                    (update :low-ci ->double)
                    (update :high-ci ->double)))))
 
-(defn all-settings [{:keys [title-fmt-str domain-lookup serie-specs]}]
-  (let [settings (into (sorted-set) (map :setting) (-> serie-specs first :data))]
-    (into []
-          (map (fn [setting]
-                 (transduce
-                  (wsc/all-domain-xf :setting setting)
-                  (wsc/chart-spec-rf
-                   (wsc/base-chart-spec
-                    {:title (format title-fmt-str (get domain-lookup setting setting))}))
-                  serie-specs)))
-          settings)))
 
-(defn multi-line-and-iqr-with-history [title settings-lookup colors-and-points historical-counts output-setting]
-  (let [settings (into (sorted-set) (map :setting) output-setting)]
-    (transduce
-     (wsc/multi-line-and-iqr-with-history-xf
-      {:domain-key :setting
-       :domain-values-lookup settings-lookup
-       :colors-and-points colors-and-points
-       :historical-counts historical-counts
-       :projected-data output-setting})
-     (wsc/chart-spec-rf
-      (wsc/base-chart-spec {:title title :legend "Settings"}))
-     settings)))

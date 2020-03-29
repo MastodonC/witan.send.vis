@@ -41,10 +41,11 @@
   {:historical-y-key :population})
 
 (def base-ay-comparison-chart-def
-  {:x-axis-label "Calendar Year" :x-axis-formatter int
-   :y-axis-label "Population" :y-axis-formatter int
+  {:legend-label "Academic Years"
    :domain-key :academic-year
    :domain-values-lookup ay-lookup
+   :x-axis-label "Calendar Year" :x-tick-formatter int
+   :y-axis-label "Population" :y-tick-formatter int
    :chartf wsc/zero-y-index})
 
 (defn output-ay [output-ay-file]
@@ -65,56 +66,69 @@
                    (update :low-ci ->double)
                    (update :high-ci ->double)))))
 
+(defn inclusive-range [beginning end]
+  (range beginning (inc end)))
 
-(defn early-years? [y]
-  (<= -5 y 0))
+(def early-years
+  (into (sorted-set) (inclusive-range -5 0)))
 
-(defn key-stage-1? [y]
-  (<= 1 y 2))
+(def key-stage-1
+  (into (sorted-set) (inclusive-range 1 2)))
 
-(defn key-stage-2? [y]
-  (<= 3 y 6))
+(def key-stage-2
+  (into (sorted-set) (inclusive-range 3 6)))
 
-(defn key-stage-3? [y]
-  (<= 7 y 9))
+(def key-stage-3
+  (into (sorted-set) (inclusive-range 7 9)))
 
-(defn key-stage-4? [y]
-  (<= 10 y 11))
+(def key-stage-4
+  (into (sorted-set) (inclusive-range 10 11)))
 
-(defn further-education? [y]
-  (<= 12 y))
+(def further-education
+  (into (sorted-set) (inclusive-range 12 25)))
 
 (defn national-curriculum-stage [y]
   (cond
-    (early-years? y) :early-years
-    (key-stage-1? y) :ks-1
-    (key-stage-2? y) :ks-2
-    (key-stage-3? y) :ks-3
-    (key-stage-4? y) :ks-4
-    (further-education? y) :further-education))
+    (early-years y) :early-years
+    (key-stage-1 y) :ks-1
+    (key-stage-2 y) :ks-2
+    (key-stage-3 y) :ks-3
+    (key-stage-4 y) :ks-4
+    (further-education y) :further-education))
+
+(defn charts
+  ([historical-data projection-data titles-and-sets]
+   (let [domain-key :academic-year
+         chart-base base-ay-comparison-chart-def
+         serie-base base-ay-comparison-serie-def
+         colors-and-points (wsc/domain-colors-and-points domain-key projection-data)]
+     (into []
+           (comp
+            (map (fn [[title domain-values]]
+                   (assoc
+                    chart-base
+                    :title title
+                    :series
+                    (into []
+                          (map (fn [domain-value]
+                                 (merge serie-base
+                                        {:legend-label domain-value
+                                         :color (-> domain-value colors-and-points :color)
+                                         :shape (-> domain-value colors-and-points :point)
+                                         :projection-data (into [] (filter #(= domain-value (domain-key %))) projection-data)
+                                         :historical-data (into [] (filter #(= domain-value (domain-key %))) historical-data)})))
+                          domain-values))))
+            (map wsc/comparison-chart-and-table))
+           titles-and-sets)))
+  ([historical-data projection-data]
+   (charts historical-data
+           projection-data
+           [["Early Years" early-years]
+            ["Key Stage 1" key-stage-1]
+            ["Key Stage 2" key-stage-2]
+            ["Key Stage 3" key-stage-3]
+            ["Key Stage 4" key-stage-4]
+            ["NCY 12+" further-education]
+            ["All NCYs" (concat early-years key-stage-1 key-stage-2 key-stage-3 key-stage-4 further-education)]])))
 
 
-(defn all-academic-years [{:keys [title-fmt-str domain-lookup serie-specs]}]
-  (let [academic-years (into (sorted-set) (map :academic-year) (-> serie-specs first :data))]
-    (into []
-          (map (fn [academic-year]
-                 (transduce
-                  (wsc/all-domain-xf :academic-year academic-year)
-                  (wsc/chart-spec-rf
-                   (wsc/base-chart-spec
-                    {:title (format title-fmt-str (get domain-lookup academic-year academic-year))}))
-                  serie-specs)))
-          academic-years)))
-
-(defn multi-line-and-iqr-with-history [title academic-years-lookup colors-and-points historical-counts output-academic-year]
-  (let [academic-years (into (sorted-set) (map :academic-year) output-academic-year)]
-    (transduce
-     (wsc/multi-line-and-iqr-with-history-xf
-      {:domain-key :academic-year
-       :domain-values-lookup academic-years-lookup
-       :colors-and-points colors-and-points
-       :historical-counts historical-counts
-       :projected-data output-academic-year})
-     (wsc/chart-spec-rf
-      (wsc/base-chart-spec {:title title :legend "Academic Years"}))
-     academic-years)))

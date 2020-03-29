@@ -3,7 +3,8 @@
          org.clojure/data.csv {:mvn/version "0.1.4"}
          cljplot              {:mvn/version "0.0.3-SNAPSHOT"}
          net.cgrand/xforms    {:mvn/version "0.18.2"}
-         clj-pdf              {:mvn/version "2.4.0"}}
+         clj-pdf              {:mvn/version "2.4.0"}
+         dk.ative/docjure     {:mvn/version "1.13.0"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps  {org.clojure/test.check {:mvn/version "0.10.0"}}}
