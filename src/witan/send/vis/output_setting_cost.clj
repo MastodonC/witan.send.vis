@@ -3,6 +3,28 @@
             [witan.send.vis :as vis]
             [witan.send.vis.ingest :as ingest :refer [->int ->double csv->]]))
 
+(def output-setting-cost-file "Output_Setting_Cost.csv")
+
+(defn base-setting-chart-def [domain-values-lookup]
+  {:legend-label "Settings"
+   :domain-key :setting
+   :domain-values-lookup domain-values-lookup
+   :x-axis-label "Calendar Year" :x-tick-formatter int
+   :y-axis-label "Millions (£)" :y-tick-formatter vis/millions-formatter
+   :chartf wsc/zero-y-index})
+
+(def base-setting-serie-def {:historical-y-key :population})
+
+(defn charts
+  [settings-lookup projection-data titles-and-sets]
+  (let [domain-key :setting]
+    (wsc/domain-charts {:domain-key domain-key
+                        :chart-base-def (base-setting-chart-def settings-lookup)
+                        :serie-base-def base-setting-serie-def
+                        :colors-and-points (wsc/domain-colors-and-points domain-key projection-data)
+                        :projection-data projection-data}
+                       titles-and-sets)))
+
 (defn output-setting-cost [output-setting-cost-file]
   (csv-> output-setting-cost-file
          (map #(-> %
@@ -20,28 +42,5 @@
                    (update :low-ci ->double)
                    (update :high-ci ->double)))))
 
-(defn all-setting-costs [{:keys [title-fmt-str domain-lookup serie-specs]}]
-  (let [settings (into (sorted-set) (map :setting) (-> serie-specs first :data))]
-    (into []
-          (map (fn [setting]
-                 (transduce
-                  (wsc/all-domain-xf :setting setting)
-                  (wsc/chart-spec-rf
-                   (wsc/base-chart-spec
-                    {:title (format title-fmt-str (get domain-lookup setting setting))
-                     :y-tick-formatter vis/millions-formatter :y-label "Cost (Millions £)"}))
-                  serie-specs)))
-          settings)))
 
-(defn multi-line-and-iqr-with-history [title settings-lookup colors-and-points output-setting]
-  (let [settings (into (sorted-set) (map :setting) output-setting)]
-    (transduce
-     (wsc/multi-line-and-iqr-with-history-xf
-      {:domain-key :setting
-       :domain-values-lookup settings-lookup
-       :colors-and-points colors-and-points
-       :projected-data output-setting})
-     (wsc/chart-spec-rf
-      (wsc/base-chart-spec {:title title :legend "Settings" :y-tick-formatter vis/millions-formatter :y-label "Cost (Millions £)"}))
-     settings)))
 
