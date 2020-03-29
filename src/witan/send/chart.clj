@@ -204,13 +204,14 @@
   "Turn a single comparison def into a seq of series defs. One
   historical line, one projected line, one projected iqr, one
   projected 90%"
-  [{:keys [legend-label color shape
+  [{:keys [legend-label color shape hide-legend
            projection-data
            historical-data historical-y-key]
+    :or {hide-legend true} ;; FIXME This doesn't feel right
     :as comparison-def}]
   (into []
         (concat
-         (when projection-data
+         (when (seq projection-data)
            [;; projection median
             {:legend-label legend-label
              :color color
@@ -241,12 +242,12 @@
                                   :color color
                                   :alpha 25}
                                  projection-data)}])
-         (when historical-data
+         (when (seq historical-data)
            [;; history
             {:legend-label legend-label
              :color color
              :shape (legend-shape shape)
-             :hide-legend true
+             :hide-legend hide-legend
              :data (wss/maps->line {:x-key :calendar-year
                                     :y-key historical-y-key
                                     :color color
