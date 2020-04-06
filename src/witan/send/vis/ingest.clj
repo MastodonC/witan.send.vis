@@ -3,27 +3,24 @@
             [clojure.java.io :as io]))
 
 
+(defn ->number [x]
+  (try
+    (.parse (java.text.NumberFormat/getInstance) x)
+    (catch Exception e
+      (throw (ex-info (format "Failed to parse supplied value '%s'" x)
+                      {:value x}
+                      e)))))
+
 (defn ->int [x]
-  (cond (int? x)
-        x
-        (double? x)
-        (int x)
-        (string? x)
-        (int (Double/valueOf x))
-        :else
-        (throw (ex-info (format "Failed to parse supplied value '%s'" x)
-                        {:value x}))))
+  (int (->number x)))
 
 (defn ->double [x]
-  (cond (double? x)
-        x
-        (int? x)
-        (double x)
-        (string? x)
-        (Double/valueOf x)
-        :else
-        (throw (ex-info (format "Failed to parse supplied value '%s'" x)
-                        {:value x}))))
+  (double (->number x)))
+
+(defn maybe-number [x]
+  (try
+    (->number x)
+    (catch Exception _ x)))
 
 (defn csv->
   "Single arity assumes a header and zipmaps the header to the
