@@ -6,6 +6,10 @@ A library to visualise SEND/ALN data.
 
 To be used from witan.send.driver based tools.
 
+It currently uses a hacked version of clj-plot to make change the font
+and size on the legends, which will hopefully be sorted in a future
+version of cljplot.
+
 ## License
 
 Copyright © 2019 Mastodon C Ltd
