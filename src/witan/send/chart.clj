@@ -315,7 +315,7 @@
                  (into []
                        (map (fn [domain-value]
                               (merge serie-base-def
-                                     {:legend-label domain-value
+                                     {:legend-label (get-in chart-base-def [:domain-values-lookup domain-value] domain-value)
                                       :color (-> domain-value colors-and-points :color)
                                       :shape (-> domain-value colors-and-points :point)
                                       :projection-data (into [] (filter #(= domain-value (domain-key %))) projection-data)
@@ -342,18 +342,21 @@
                         comparison-defs)
         wb (apply xl/create-workbook wb-data)]
     (run! (fn [[sheet-name img]]
-            (let [;; int pictureIdx = wb.addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
-                  pic-idx (.addPicture wb img Workbook/PICTURE_TYPE_PNG)
-                  sheet (xl/select-sheet sheet-name wb)
-                  helper (.getCreationHelper wb)
-                  drawing (.createDrawingPatriarch sheet)
-                  anchor (.createClientAnchor helper)
-                  _ (.setCol1 anchor 14)
-                  _ (.setRow1 anchor 2)
-                  ;; Picture pict = drawing.createPicture(anchor, pictureIdx);
-                  ;; pict.resize();
-                  pict (.createPicture drawing anchor pic-idx)]
-              (.resize pict)))
+            (try
+              (let [ ;; int pictureIdx = wb.addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
+                    pic-idx (.addPicture wb img Workbook/PICTURE_TYPE_PNG)
+                    sheet (xl/select-sheet sheet-name wb)
+                    helper (.getCreationHelper wb)
+                    drawing (.createDrawingPatriarch sheet)
+                    anchor (.createClientAnchor helper)
+                    _ (.setCol1 anchor 14)
+                    _ (.setRow1 anchor 2)
+                    ;; Picture pict = drawing.createPicture(anchor, pictureIdx);
+                    ;; pict.resize();
+                    pict (.createPicture drawing anchor pic-idx)]
+                (.resize pict))
+              (catch Exception e
+                (throw (ex-info (str "Failed to create sheet. " sheet-name) {:sheet-name sheet-name} e)))))
           wb-charts)
     wb))
 
