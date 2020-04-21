@@ -84,8 +84,11 @@
 (def key-stage-4
   (into (sorted-set) (inclusive-range 10 11)))
 
-(def further-education
-  (into (sorted-set) (inclusive-range 12 25)))
+(def key-stage-5
+  (into (sorted-set) (inclusive-range 12 14)))
+
+(def ncy-15+
+  (into (sorted-set) (inclusive-range 15 25)))
 
 (defn national-curriculum-stage [y]
   (cond
@@ -94,7 +97,8 @@
     (key-stage-2 y) :ks-2
     (key-stage-3 y) :ks-3
     (key-stage-4 y) :ks-4
-    (further-education y) :further-education))
+    (key-stage-5 y) :ks-5
+    (ncy-15+ y) :further-education))
 
 (defn charts
   ([historical-data projection-data titles-and-sets]
@@ -128,7 +132,8 @@
             ["Key Stage 2" key-stage-2]
             ["Key Stage 3" key-stage-3]
             ["Key Stage 4" key-stage-4]
-            ["NCY 12+" further-education]
-            ["All NCYs" (concat early-years key-stage-1 key-stage-2 key-stage-3 key-stage-4 further-education)]])))
+            ["Key Stage 5" key-stage-5]
+            ["NCY 15+" ncy-15+]
+            ["All NCYs" (concat early-years key-stage-1 key-stage-2 key-stage-3 key-stage-4 key-stage-5 ncy-15+)]])))
 
 
