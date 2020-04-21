@@ -26,6 +26,31 @@
           xs))
    {:color (color/color color (or alpha 50))}])
 
+;; FIXME: Not quite the right abstraction to roll up the underlying records yet
+;; (defn maps->grouped-bar
+;;   "summaryf is a function that takes: 
+;;   group-domain-map [x-domain-key seq-of-maps-from-passed-in-data]
+;;   and returns
+;;   [x-domain-key vec-of-nums-to-chart]"
+;;   [{:keys [x-key x-group-key y-key summaryf palette]} xs]
+;;   (let [group-domain (into (sorted-set) (map x-group-key) xs)
+;;         group-domain-map (into (sorted-map) (zipmap group-domain (repeat 0)))
+;;         x-domain (into (sorted-set) (map x-key) xs)
+;;         x-domain-map (into (sorted-map) (zipmap x-domain (repeat [])))
+;;         data (transduce
+;;               (map identity)
+;;               (fn
+;;                 ([] x-domain-map)
+;;                 ([acc] (into (sorted-map)
+;;                              summaryf
+;;                              acc))
+;;                 ([acc new] (update acc conj new)))
+;;               xs)
+;;         ]
+;;     x-domain-map
+;;     ;;[:stack-vertical [:bar data {:palette palette}]]
+;;     ))
+
 (defn serie-and-legend-spec [{:keys [color shape projection legend-label hide-legend y-key data] :as serie-spec}]
   (let [case' (case shape
                 \^ \v
