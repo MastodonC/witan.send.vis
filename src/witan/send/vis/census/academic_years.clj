@@ -14,7 +14,7 @@
    :y-axis-label "Population" :y-tick-formatter int
    :chartf wsc/zero-y-index})
 
-(defn ay-counts-per-calendar-year [census-data]
+(defn counts-per-calendar-year [census-data]
   (transduce
    (remove #(= (:need %) "NONSEND"))
    (fn
@@ -31,9 +31,19 @@
    census-data))
 
 
+(def all-chart-specs
+  [["Early Years" oay/early-years]
+   ["Key Stage 1" oay/key-stage-1]
+   ["Key Stage 2" oay/key-stage-2]
+   ["Key Stage 3" oay/key-stage-3]
+   ["Key Stage 4" oay/key-stage-4]
+   ["Key Stage 5" oay/key-stage-5]
+   ["NCY 15+" oay/ncy-15+]
+   ["All NCYs" (concat oay/early-years oay/key-stage-1 oay/key-stage-2 oay/key-stage-3 oay/key-stage-4 oay/key-stage-5 oay/ncy-15+)]])
+
 (defn charts
   ([census-data titles-and-sets]
-   (let [ay-counts (ay-counts-per-calendar-year census-data)
+   (let [ay-counts (counts-per-calendar-year census-data)
          domain-key :academic-year
          chart-base base-ay-comparison-chart-def
          serie-base base-ay-comparison-serie-def
@@ -57,14 +67,11 @@
             (map wsc/comparison-chart-and-table))
            titles-and-sets)))
   ([census-data]
-   (charts census-data
-           [["Early Years" oay/early-years]
-            ["Key Stage 1" oay/key-stage-1]
-            ["Key Stage 2" oay/key-stage-2]
-            ["Key Stage 3" oay/key-stage-3]
-            ["Key Stage 4" oay/key-stage-4]
-            ["Key Stage 5" oay/key-stage-5]
-            ["NCY 15+" oay/ncy-15+]
-            ["All NCYs" (concat oay/early-years oay/key-stage-1 oay/key-stage-2 oay/key-stage-3 oay/key-stage-4 oay/key-stage-5 oay/ncy-15+)]])))
+   (charts census-data all-chart-specs)))
 
 
+(comment
+
+  (mapv (fn [[title pred]] [(str "Joiners to " title) pred]) all-chart-specs)
+  [["Joiners to Early Years" #{-5 -4 -3 -2 -1 0}] ["Joiners to Key Stage 1" #{1 2}] ["Joiners to Key Stage 2" #{3 4 5 6}] ["Joiners to Key Stage 3" #{7 8 9}] ["Joiners to Key Stage 4" #{10 11}] ["Joiners to Key Stage 5" #{12 13 14}] ["Joiners to NCY 15+" #{15 16 17 18 19 20 21 22 23 24 25}] ["Joiners to All NCYs" (-5 -4 -3 -2 -1 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25)]]
+  )

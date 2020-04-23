@@ -31,6 +31,11 @@
    {}
    census-data))
 
+(def all-chart-specs
+  [["Other" (sorted-set "T" "X"  "AP" "AW" "EO" "OLA")]
+   ["Post 16" (sorted-set "P16FEC" "P16OFE" "P16SPI" "SI" "A")]
+   ["Mainstream" (sorted-set "EYS" "MSASU" "MSFS" "MSIS" "MSLAM" "MSLAMSU")]
+   ["Special" (sorted-set "SSAF" "SSIS" "SSISS" "SSLAM")]])
 
 (defn charts
   ([census-data titles-and-sets]
@@ -60,6 +65,7 @@
   ([census-data]
    (let [all-settings (into (sorted-set) (map :setting census-data))]
      (charts census-data
-             [["All Settings" all-settings]]))))
+             (concat [["All Settings" all-settings]]
+                     all-chart-specs)))))
 
 

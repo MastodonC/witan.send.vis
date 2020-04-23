@@ -32,6 +32,17 @@
    census-data))
 
 
+;; 1. Communication and interaction
+;; 2. Cognition and learning
+;; 3. Social, mental and emotional health
+;; 4. Sensory and/or physical
+
+(def all-chart-specs
+  [["Communication" (sorted-set "ASD" "SLCN" "SEMH")]
+   ["Cognition" (sorted-set "ADHD" "MLD" "PMLD" "SLD" "SPLD")]
+   ["Physical" (sorted-set "HI" "MSI" "VI" "PD")]
+   ["Other" (sorted-set "Pre-Assesment" "Unknown" "OTH")]])
+
 (defn charts
   ([census-data titles-and-sets]
    (let [counts (counts-per-calendar-year census-data)
@@ -60,7 +71,8 @@
   ([census-data]
    (let [all-needs (into (sorted-set) (map :need census-data))]
      (charts census-data
-             [["All Needs" all-needs]]))))
+             (concat [["All Needs" all-needs]]
+                     all-chart-specs)))))
 
 
 
