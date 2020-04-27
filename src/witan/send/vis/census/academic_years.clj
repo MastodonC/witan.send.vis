@@ -42,12 +42,14 @@
    ["All NCYs" (concat oay/early-years oay/key-stage-1 oay/key-stage-2 oay/key-stage-3 oay/key-stage-4 oay/key-stage-5 oay/ncy-15+)]])
 
 (defn charts
-  ([census-data titles-and-sets]
+  ([config census-data]
    (let [ay-counts (counts-per-calendar-year census-data)
          domain-key :academic-year
          chart-base base-ay-comparison-chart-def
          serie-base base-ay-comparison-serie-def
-         colors-and-points (wsc/domain-colors-and-points domain-key census-data)]
+         {:keys [titles-and-sets colors-and-points]
+          :or {titles-and-sets all-chart-specs
+               colors-and-points (wsc/domain-colors-and-points domain-key census-data)}} config]
      (into []
            (comp
             (map (fn [[title domain-values]]
@@ -67,7 +69,8 @@
             (map wsc/comparison-chart-and-table))
            titles-and-sets)))
   ([census-data]
-   (charts census-data all-chart-specs)))
+   (charts {:titles-and-sets all-chart-specs}
+           census-data)))
 
 
 (comment

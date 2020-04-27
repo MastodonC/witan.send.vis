@@ -43,13 +43,19 @@
    ["Physical" (sorted-set "HI" "MSI" "VI" "PD")]
    ["Other" (sorted-set "Pre-Assesment" "Unknown" "OTH")]])
 
+
+;; FIXME: Create good defaults in the let rather than the function destructuring
 (defn charts
-  ([census-data titles-and-sets]
+  ([config census-data]
    (let [counts (counts-per-calendar-year census-data)
          domain-key :need
          chart-base base-comparison-chart-def
          serie-base base-comparison-serie-def
-         colors-and-points (wsc/domain-colors-and-points domain-key census-data)]
+         {:keys [titles-and-sets colors-and-points]
+          :or {titles-and-sets (concat [["All Needs" (into (sorted-set) (mapcat second) all-chart-specs)]]
+                                       all-chart-specs)
+               colors-and-points (wsc/domain-colors-and-points domain-key census-data)}} config]
+     ;; FIXME: Should this into be a function that gets re-used?
      (into []
            (comp
             (map (fn [[title domain-values]]
@@ -70,9 +76,9 @@
            titles-and-sets)))
   ([census-data]
    (let [all-needs (into (sorted-set) (map :need census-data))]
-     (charts census-data
-             (concat [["All Needs" all-needs]]
-                     all-chart-specs)))))
+     (charts {:titles-and-sets (concat [["All Needs" all-needs]]
+                                       all-chart-specs)}
+             census-data))))
 
 
 

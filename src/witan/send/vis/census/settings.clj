@@ -38,12 +38,15 @@
    ["Special" (sorted-set "SSAF" "SSIS" "SSISS" "SSLAM")]])
 
 (defn charts
-  ([census-data titles-and-sets]
+  ([config census-data]
    (let [counts (counts-per-calendar-year census-data)
          domain-key :setting
          chart-base base-comparison-chart-def
          serie-base base-comparison-serie-def
-         colors-and-points (wsc/domain-colors-and-points domain-key census-data)]
+         {:keys [titles-and-sets colors-and-points]
+          :or {titles-and-sets (concat [["All Settings" (into (sorted-set) (mapcat second) all-chart-specs)]]
+                                       all-chart-specs)
+               colors-and-points (wsc/domain-colors-and-points domain-key census-data)}} config]
      (into []
            (comp
             (map (fn [[title domain-values]]
@@ -64,8 +67,8 @@
            titles-and-sets)))
   ([census-data]
    (let [all-settings (into (sorted-set) (map :setting census-data))]
-     (charts census-data
-             (concat [["All Settings" all-settings]]
-                     all-chart-specs)))))
+     (charts {:titles-and-sets (concat [["All Settings" all-settings]]
+                                       all-chart-specs)}
+             census-data))))
 
 
