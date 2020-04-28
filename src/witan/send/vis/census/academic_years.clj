@@ -8,6 +8,7 @@
 (def base-ay-comparison-chart-def
   {:legend-label "Academic Years"
    :hide-legend false
+   :legend-spec [] ;; empty base legend
    :domain-key :academic-year
    :domain-values-lookup oay/ay-lookup
    :x-axis-label "Calendar Year" :x-tick-formatter int

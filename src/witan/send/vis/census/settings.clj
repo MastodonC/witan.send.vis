@@ -9,6 +9,7 @@
 (def base-comparison-chart-def
   {:legend-label "Settings"
    :hide-legend false
+   :legend-spec [] ;; empty base legend
    :domain-key :academic-year
    :domain-values-lookup lookup
    :x-axis-label "Calendar Year" :x-tick-formatter int
