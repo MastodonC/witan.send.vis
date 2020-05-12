@@ -65,12 +65,8 @@
       prepped-data)))
 
 (defn update-chart-y-axis-ticks [chart-spec series]
-  (let [y-max (->> series
-                   (mapcat (fn [x] (second x)))
-                   (map (fn [y] (second y)))
-                   (reduce max))
-        [t [_bottom _top]] (get-in chart-spec [:extents :y 0])]
-    (if (and (= :numerical t) (< y-max 10))
+  (let [[t [_bottom top]] (get-in chart-spec [:extents :y 0])]
+    (if (and (= :numerical t) (< top 10))
       (plotb/update-scale chart-spec :y :domain [0 10])
       chart-spec)))
 
