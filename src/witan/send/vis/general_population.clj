@@ -44,8 +44,9 @@
             ["General Population Key Stage 2" vis.oay/key-stage-2]
             ["General Population Key Stage 3" vis.oay/key-stage-3]
             ["General Population Key Stage 4" vis.oay/key-stage-4]
-            ["General Population NCY 12+" vis.oay/further-education]
-            ["General Population All NCYs" (concat vis.oay/early-years vis.oay/key-stage-1 vis.oay/key-stage-2 vis.oay/key-stage-3 vis.oay/key-stage-4 vis.oay/further-education)]])))
+            ["General Population Key Stage 5" vis.oay/key-stage-5]
+            ["General Population NCY 15+" vis.oay/ncy-15+]
+            ["General Population All NCYs" (concat vis.oay/early-years vis.oay/key-stage-1 vis.oay/key-stage-2 vis.oay/key-stage-3 vis.oay/key-stage-4 vis.oay/key-stage-5 vis.oay/ncy-15+)]])))
 
 ;; TODO? Still needed?
 (defn total-population [total-population]
