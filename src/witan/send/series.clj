@@ -1,6 +1,34 @@
 (ns witan.send.series
   (:require [clojure2d.color :as color]))
 
+(defn data->line-series
+  "data should be a vector of pairs of [x-axis-pt y-axis-pt]"
+  [{:keys [color shape stroke dash data]}]
+  (let [line-spec {:color (color/color color) :point {:type shape :size 15 :stroke {:size (or stroke 4)}} :stroke {:size (or stroke 4)}}
+        line-spec (if dash (assoc-in line-spec [:stroke :dash] dash) line-spec)]
+    [:line data line-spec]))
+
+(defn legend-shape [serie-shape]
+  (case serie-shape
+    \^ \v
+    \A \V
+    \v \^
+    \V \A
+    \\ \/
+    \/ \\
+    serie-shape))
+
+(defn data->line-legend [{:keys [color shape label]}]
+  [:shape label {:color color :shape (legend-shape shape) :size 15 :stroke {:size 4.0}}])
+
+(defn data->ribbon-series
+  "high-data and low-data should be pairs of [x-axis-pt y-axis-pt]"
+  [{:keys [color alpha high-data low-data]}]
+  [:ci [high-data low-data]] {:color (color/color color (or alpha 50))})
+
+(defn data->ribbon-legend [{:keys [color alpha label]}]
+  [:rect label {:color (color/set-alpha (color/color (or color :black)) (or alpha 50))}])
+
 (defn maps->line [{:keys [x-key y-key color point stroke dash]} xs]
   (let [line-spec {:color (color/color color) :point {:type point :size 15 :stroke {:size (or stroke 4)}} :stroke {:size (or stroke 4)}}
         line-spec (if dash (assoc-in line-spec [:stroke :dash] dash) line-spec)]
