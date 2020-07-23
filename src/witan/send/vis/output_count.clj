@@ -1,6 +1,5 @@
 (ns witan.send.vis.output-count
   (:require [witan.send.chart :as wsc]
-            [witan.send.series :as wss]
             [witan.send.vis.ingest :as ingest :refer [->int ->double csv->]]))
 
 (def output-count-file "Output_Count.csv")
@@ -34,20 +33,14 @@
 (defn chart [title historical-data projection-data]
   (let [chart-base base-count-comparison-chart-def
         serie-base base-count-comparison-serie-def]
-    [(assoc
-      chart-base
-      :title title
-      :series
-      [(assoc serie-base
-              :legend-label "2020 Baseline"
-              :color wsc/blue
-              :shape \A
-              :historical-data historical-data
-              :projection-data projection-data)])]))
-
-#_(defn send-populations [title serie-specs]
-    (transduce
-     (mapcat wss/serie-and-legend-spec)
-     (wsc/chart-spec-rf
-      (wsc/base-chart-spec {:title title :legend "Data Sets"}))
-     serie-specs))
+    [(wsc/comparison-chart-and-table
+      (assoc
+       chart-base
+       :title title
+       :series
+       [(assoc serie-base
+               :legend-label "Population"
+               :color wsc/blue
+               :shape \A
+               :historical-data historical-data
+               :projection-data projection-data)]))]))
