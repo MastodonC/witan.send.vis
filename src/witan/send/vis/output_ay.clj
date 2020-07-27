@@ -100,6 +100,16 @@
     (key-stage-5 y) :ks-5
     (ncy-15+ y) :further-education))
 
+(def ay-titles-and-sets
+  [["Early Years" early-years]
+   ["Key Stage 1" key-stage-1]
+   ["Key Stage 2" key-stage-2]
+   ["Key Stage 3" key-stage-3]
+   ["Key Stage 4" key-stage-4]
+   ["Key Stage 5" key-stage-5]
+   ["NCY 15+" ncy-15+]
+   ["All NCYs" (concat early-years key-stage-1 key-stage-2 key-stage-3 key-stage-4 key-stage-5 ncy-15+)]])
+
 (defn charts
   ([historical-data projection-data titles-and-sets]
    (let [domain-key :academic-year
@@ -127,13 +137,6 @@
   ([historical-data projection-data]
    (charts historical-data
            projection-data
-           [["Early Years" early-years]
-            ["Key Stage 1" key-stage-1]
-            ["Key Stage 2" key-stage-2]
-            ["Key Stage 3" key-stage-3]
-            ["Key Stage 4" key-stage-4]
-            ["Key Stage 5" key-stage-5]
-            ["NCY 15+" ncy-15+]
-            ["All NCYs" (concat early-years key-stage-1 key-stage-2 key-stage-3 key-stage-4 key-stage-5 ncy-15+)]])))
+           ay-titles-and-sets)))
 
 

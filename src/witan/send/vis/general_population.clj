@@ -24,7 +24,18 @@
    ;; :hide-legend true
    :x-axis-label "Calendar Year" :x-tick-formatter int
    :y-axis-label "Population" :y-tick-formatter int
+   :legend-spec [] ;; we don't want any of the default legend stuff
    :chartf wsc/zero-y-index})
+
+(def gen-pop-titles-and-sets
+  [["General Population Early Years" vis.oay/early-years]
+   ["General Population Key Stage 1" vis.oay/key-stage-1]
+   ["General Population Key Stage 2" vis.oay/key-stage-2]
+   ["General Population Key Stage 3" vis.oay/key-stage-3]
+   ["General Population Key Stage 4" vis.oay/key-stage-4]
+   ["General Population Key Stage 5" vis.oay/key-stage-5]
+   ["General Population NCY 15+" vis.oay/ncy-15+]
+   ["General Population All NCYs" (concat vis.oay/early-years vis.oay/key-stage-1 vis.oay/key-stage-2 vis.oay/key-stage-3 vis.oay/key-stage-4 vis.oay/key-stage-5 vis.oay/ncy-15+)]])
 
 ;; FIXME: Not terribly happy about calling this "historic data" as it is a projection
 (defn charts
@@ -39,14 +50,7 @@
   ([historical-data]
    (charts vis.oay/ay-lookup
            historical-data
-           [["General Population Early Years" vis.oay/early-years]
-            ["General Population Key Stage 1" vis.oay/key-stage-1]
-            ["General Population Key Stage 2" vis.oay/key-stage-2]
-            ["General Population Key Stage 3" vis.oay/key-stage-3]
-            ["General Population Key Stage 4" vis.oay/key-stage-4]
-            ["General Population Key Stage 5" vis.oay/key-stage-5]
-            ["General Population NCY 15+" vis.oay/ncy-15+]
-            ["General Population All NCYs" (concat vis.oay/early-years vis.oay/key-stage-1 vis.oay/key-stage-2 vis.oay/key-stage-3 vis.oay/key-stage-4 vis.oay/key-stage-5 vis.oay/ncy-15+)]])))
+           gen-pop-titles-and-sets)))
 
 ;; TODO? Still needed?
 (defn total-population [total-population]
