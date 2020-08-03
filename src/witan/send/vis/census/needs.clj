@@ -58,10 +58,10 @@
                                    (into #{} (remove
                                               #(contains? (-> all-default-needs first second) %) all-census-needs))]]
          {:keys [titles-and-sets colors-and-points]
-          :or {titles-and-sets (let [t&s (concat all-default-needs all-chart-specs)]
-                                 (if (-> additional-census-needs first second empty?)
-                                   t&s
-                                   (concat t&s additional-census-needs)))
+          :or {titles-and-sets (let [t&s (into all-chart-specs all-default-needs)]
+                                 (if (-> additional-census-needs first second seq)
+                                   (into t&s additional-census-needs)
+                                   t&s))
                colors-and-points (wsc/domain-colors-and-points domain-key census-data)}} config]
      ;; FIXME: Should this into be a function that gets re-used?
      (into []
