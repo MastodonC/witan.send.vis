@@ -55,8 +55,8 @@
          all-census-needs (into #{} (map :need) census-data)
          all-default-needs [["All Needs" (into (sorted-set) (mapcat second) all-chart-specs)]]
          additional-census-needs [["Additional Needs"
-                                   (into #{} (filter #((complement contains?)
-                                                       (-> all-default-needs first second) %) all-census-needs))]]
+                                   (into #{} (remove
+                                              #(contains? (-> all-default-needs first second) %) all-census-needs))]]
          {:keys [titles-and-sets colors-and-points]
           :or {titles-and-sets (let [t&s (concat all-default-needs all-chart-specs)]
                                  (if (-> additional-census-needs first second empty?)
