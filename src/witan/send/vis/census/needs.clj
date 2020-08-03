@@ -52,9 +52,16 @@
          domain-key :need
          chart-base base-comparison-chart-def
          serie-base base-comparison-serie-def
+         all-census-needs (into #{} (map :need) census-data)
+         all-default-needs [["All Needs" (into (sorted-set) (mapcat second) all-chart-specs)]]
+         additional-census-needs [["Additional Needs"
+                                   (into #{} (filter #((complement contains?)
+                                                       (-> all-default-needs first second) %) all-census-needs))]]
          {:keys [titles-and-sets colors-and-points]
-          :or {titles-and-sets (concat [["All Needs" (into (sorted-set) (mapcat second) all-chart-specs)]]
-                                       all-chart-specs)
+          :or {titles-and-sets (let [t&s (concat all-default-needs all-chart-specs)]
+                                 (if (-> additional-census-needs first second empty?)
+                                   t&s
+                                   (concat t&s additional-census-needs)))
                colors-and-points (wsc/domain-colors-and-points domain-key census-data)}} config]
      ;; FIXME: Should this into be a function that gets re-used?
      (into []
