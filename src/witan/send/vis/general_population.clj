@@ -2,7 +2,7 @@
   (:require [clojure2d.color :as color]
             [witan.send.chart :as wsc]
             [witan.send.series :as wss]
-            [witan.send.vis.output-ay :as vis.oay]
+            [witan.send.domain.academic-years :as ay]
             [witan.send.vis.ingest :as ingest :refer [->int csv->]]
             [witan.send.vis :as vis]))
 
@@ -28,14 +28,14 @@
    :chartf wsc/zero-y-index})
 
 (def gen-pop-titles-and-sets
-  [["General Population Early Years" vis.oay/early-years]
-   ["General Population Key Stage 1" vis.oay/key-stage-1]
-   ["General Population Key Stage 2" vis.oay/key-stage-2]
-   ["General Population Key Stage 3" vis.oay/key-stage-3]
-   ["General Population Key Stage 4" vis.oay/key-stage-4]
-   ["General Population Key Stage 5" vis.oay/key-stage-5]
-   ["General Population NCY 15+" vis.oay/ncy-15+]
-   ["General Population All NCYs" (concat vis.oay/early-years vis.oay/key-stage-1 vis.oay/key-stage-2 vis.oay/key-stage-3 vis.oay/key-stage-4 vis.oay/key-stage-5 vis.oay/ncy-15+)]])
+  [["General Population Early Years" ay/early-years]
+   ["General Population Key Stage 1" ay/key-stage-1]
+   ["General Population Key Stage 2" ay/key-stage-2]
+   ["General Population Key Stage 3" ay/key-stage-3]
+   ["General Population Key Stage 4" ay/key-stage-4]
+   ["General Population Key Stage 5" ay/key-stage-5]
+   ["General Population NCY 15+" ay/ncy-15+]
+   ["General Population All NCYs" (concat ay/early-years ay/key-stage-1 ay/key-stage-2 ay/key-stage-3 ay/key-stage-4 ay/key-stage-5 ay/ncy-15+)]])
 
 ;; FIXME: Not terribly happy about calling this "historic data" as it is a projection
 (defn charts
@@ -48,7 +48,7 @@
                          :historical-data historical-data}
                         titles-and-sets)))
   ([historical-data]
-   (charts vis.oay/ay-lookup
+   (charts ay/ay-lookup
            historical-data
            gen-pop-titles-and-sets)))
 

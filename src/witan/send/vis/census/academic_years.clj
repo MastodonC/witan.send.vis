@@ -1,6 +1,6 @@
 (ns witan.send.vis.census.academic-years
   (:require [witan.send.chart :as wsc]
-            [witan.send.vis.output-ay :as oay]))
+            [witan.send.domain.academic-years :as ay]))
 
 (def base-ay-comparison-serie-def
   {:historical-y-key :population})
@@ -10,7 +10,7 @@
    :hide-legend false
    :legend-spec [] ;; empty base legend
    :domain-key :academic-year
-   :domain-values-lookup oay/ay-lookup
+   :domain-values-lookup ay/ay-lookup
    :x-axis-label "Calendar Year" :x-tick-formatter int
    :y-axis-label "Population" :y-tick-formatter int
    :chartf wsc/zero-y-index})
@@ -33,14 +33,14 @@
 
 
 (def all-chart-specs
-  [["Early Years" oay/early-years]
-   ["Key Stage 1" oay/key-stage-1]
-   ["Key Stage 2" oay/key-stage-2]
-   ["Key Stage 3" oay/key-stage-3]
-   ["Key Stage 4" oay/key-stage-4]
-   ["Key Stage 5" oay/key-stage-5]
-   ["NCY 15+" oay/ncy-15+]
-   ["All NCYs" (concat oay/early-years oay/key-stage-1 oay/key-stage-2 oay/key-stage-3 oay/key-stage-4 oay/key-stage-5 oay/ncy-15+)]])
+  [["Early Years" ay/early-years]
+   ["Key Stage 1" ay/key-stage-1]
+   ["Key Stage 2" ay/key-stage-2]
+   ["Key Stage 3" ay/key-stage-3]
+   ["Key Stage 4" ay/key-stage-4]
+   ["Key Stage 5" ay/key-stage-5]
+   ["NCY 15+" ay/ncy-15+]
+   ["All NCYs" (concat ay/early-years ay/key-stage-1 ay/key-stage-2 ay/key-stage-3 ay/key-stage-4 ay/key-stage-5 ay/ncy-15+)]])
 
 (defn charts
   ([config census-data]

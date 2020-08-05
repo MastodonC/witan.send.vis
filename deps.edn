@@ -4,7 +4,8 @@
          cljplot              {:mvn/version "0.0.2-SNAPSHOT"}
          net.cgrand/xforms    {:mvn/version "0.18.2"}
          clj-pdf              {:mvn/version "2.4.0"}
-         dk.ative/docjure     {:mvn/version "1.13.0"}}
+         dk.ative/docjure     {:mvn/version "1.13.0"}
+         witan.send           {:local/root "../witan.send"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps  {org.clojure/test.check {:mvn/version "0.10.0"}}}
