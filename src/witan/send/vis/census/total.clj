@@ -15,3 +15,6 @@
                              :color wsc/blue
                              :point \V}
                             total-population)]})
+
+(defn chart [title total-send]
+  [(wsc/comparison-chart-and-table (assoc total-send :title title))])
