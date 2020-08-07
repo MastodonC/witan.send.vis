@@ -1,6 +1,7 @@
 (ns witan.send.vis.census.total
   (:require [witan.send.chart :as wsc]
-            [witan.send.series :as wss]))
+            [witan.send.series :as wss]
+            [witan.phyrexian.sen2-processing-tool :as sen]))
 
 (defn total-send-population [total-population]
   {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
