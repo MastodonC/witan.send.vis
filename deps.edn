@@ -1,4 +1,4 @@
-{:paths ["resources" "src"]
+{:paths ["src"]
  :deps  {org.clojure/clojure  {:mvn/version "1.10.1"}
          org.clojure/data.csv {:mvn/version "0.1.4"}
          cljplot              {:mvn/version "0.0.2-SNAPSHOT"}
