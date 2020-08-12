@@ -19,3 +19,13 @@
 
 (defn chart [title total-send]
   [(wsc/comparison-chart-and-table (assoc total-send :title title))])
+
+(defn key-to-year [k]
+  (read-string (str "20" (-> k key name (clojure.string/split #"-") second))))
+
+(defn sen2 [LA]
+  (let [gss (into [] (sen/search-gss LA))
+        pop (sen/generate-current-pop gss)]
+    (map #(assoc {}
+                 :calendar-year (key-to-year %)
+                 :population (val %)) pop)))
