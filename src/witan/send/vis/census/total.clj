@@ -26,7 +26,7 @@
    :series [(wss/maps->line {:x-key :calendar-year
                              :y-key :population
                              :color wsc/orange
-                             :point \V}
+                             :point \O}
                             sen2)
             (wss/maps->line {:x-key :calendar-year
                              :y-key :population
