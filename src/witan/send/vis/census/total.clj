@@ -6,13 +6,17 @@
 (defn key-to-year [k]
   (read-string (str "20" (-> k key name (clojure.string/split #"-") second))))
 
-(defn sen2 [LA district-or-la]
+(defn sen2 [LA district-or-la census]
   "Requires a local authority/district as a string and a key (:district or :la)."
-  (let [gss (into [] (sen/search-gss LA district-or-la))
+  (let [years (into (sorted-set) (map :calendar-year census))
+        gss (into [] (sen/search-gss LA district-or-la))
         pop (sen/generate-current-pop gss)]
-    (map #(assoc {}
-                 :calendar-year (key-to-year %)
-                 :population (val %)) pop)))
+    (into [] (comp
+              (map #(assoc {}
+                           :calendar-year (key-to-year %)
+                           :population (val %)))
+              (filter (comp years :calendar-year)))
+          pop)))
 
 (defn total-send-population [total-population sen2]
   {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
