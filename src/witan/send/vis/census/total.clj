@@ -6,8 +6,9 @@
 (defn key-to-year [k]
   (read-string (str "20" (-> k key name (clojure.string/split #"-") second))))
 
-(defn sen2 [LA]
-  (let [gss (into [] (sen/search-gss LA))
+(defn sen2 [LA district-or-la]
+  "Requires a local authority/district as a string and a key (:district or :la)."
+  (let [gss (into [] (sen/search-gss LA district-or-la))
         pop (sen/generate-current-pop gss)]
     (map #(assoc {}
                  :calendar-year (key-to-year %)
