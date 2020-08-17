@@ -80,9 +80,9 @@
                                           :color (-> domain-value colors-and-points :color)
                                           :shape (-> domain-value colors-and-points :point)
                                           :historical-data (into [] (filter #(= domain-value (domain-key %))) counts)})))
-                           (remove (fn [m] (empty? (:historical-data m)))))
+                           (filter (fn [m] (seq (:historical-data m)))))
                           domain-values))))
-            (remove (fn [m] (empty? (:series m))))
+            (filter (fn [m] (seq (:series m))))
             (map wsc/comparison-chart-and-table))
            titles-and-sets)))
   ([census-data]
