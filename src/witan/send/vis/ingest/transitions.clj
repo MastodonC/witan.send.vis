@@ -45,7 +45,8 @@
                   (map #(cs/rename-keys % {:setting-2 :setting :need-2 :need :academic-year-2 :academic-year}))
                   (map #(update % :calendar-year inc)))
                  transitions)]
-    (into t1 t2)))
+    (->> (into t1 t2)
+         (filter #(not= "NONSEND" (:need %))))))
 
 (defn total-population-per-calendar-year [transitions]
   (transduce

@@ -1,11 +1,12 @@
-{:paths ["resources" "src"]
+{:paths ["src"]
  :deps  {org.clojure/clojure  {:mvn/version "1.10.1"}
          org.clojure/data.csv {:mvn/version "0.1.4"}
          cljplot              {:mvn/version "0.0.2-SNAPSHOT"}
          net.cgrand/xforms    {:mvn/version "0.18.2"}
          clj-pdf              {:mvn/version "2.4.0"}
          dk.ative/docjure     {:mvn/version "1.13.0"}
-         witan.send           {:local/root "../witan.send"}}
+         witan.send           {:local/root "../witan.send"}
+         witan.phyrexian      {:local/root "../witan.phyrexian"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps  {org.clojure/test.check {:mvn/version "0.10.0"}}}
