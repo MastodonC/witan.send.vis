@@ -72,14 +72,17 @@
                     :title title
                     :series
                     (into []
-                          (map (fn [domain-value]
-                                 (merge serie-base
-                                        {:legend-label domain-value
-                                         :hide-legend false
-                                         :color (-> domain-value colors-and-points :color)
-                                         :shape (-> domain-value colors-and-points :point)
-                                         :historical-data (into [] (filter #(= domain-value (domain-key %))) counts)})))
+                          (comp
+                           (map (fn [domain-value]
+                                  (merge serie-base
+                                         {:legend-label domain-value
+                                          :hide-legend false
+                                          :color (-> domain-value colors-and-points :color)
+                                          :shape (-> domain-value colors-and-points :point)
+                                          :historical-data (into [] (filter #(= domain-value (domain-key %))) counts)})))
+                           (filter (fn [m] (seq (:historical-data m)))))
                           domain-values))))
+            (filter (fn [m] (seq (:series m))))
             (map wsc/comparison-chart-and-table))
            titles-and-sets)))
   ([census-data]
