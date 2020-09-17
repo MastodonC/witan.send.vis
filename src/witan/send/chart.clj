@@ -330,14 +330,17 @@
                  :title title
                  :series
                  (into []
-                       (map (fn [domain-value]
-                              (merge serie-base-def
-                                     {:legend-label (get-in chart-base-def [:domain-values-lookup domain-value] domain-value)
-                                      :color (-> domain-value colors-and-points :color)
-                                      :shape (-> domain-value colors-and-points :point)
-                                      :projection-data (into [] (filter #(= domain-value (domain-key %))) projection-data)
-                                      :historical-data (into [] (filter #(= domain-value (domain-key %))) historical-data)})))
+                       (comp
+                        (map (fn [domain-value]
+                               (merge serie-base-def
+                                      {:legend-label (get-in chart-base-def [:domain-values-lookup domain-value] domain-value)
+                                       :color (-> domain-value colors-and-points :color)
+                                       :shape (-> domain-value colors-and-points :point)
+                                       :projection-data (into [] (filter #(= domain-value (domain-key %))) projection-data)
+                                       :historical-data (into [] (filter #(= domain-value (domain-key %))) historical-data)})))
+                        (remove #(empty? (:projection-data %))))
                        domain-values))))
+         (remove #(empty? (:series %)))
          (map comparison-chart-and-table))
         titles-and-sets))
 
