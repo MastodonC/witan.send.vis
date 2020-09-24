@@ -32,11 +32,12 @@
 
 (defn chart [title projection-data]
   (let [chart-base base-cost-comparison-chart-def]
-    [(assoc
-      chart-base
-      :title title
-      :series
-      [{:legend-label "2020 Baseline"
-        :color wsc/blue
-        :shape \A
-        :projection-data projection-data}])]))
+    [(wsc/comparison-chart-and-table
+      (assoc
+       chart-base
+       :title title
+       :series
+       [{:legend-label "2020 Baseline"
+         :color wsc/blue
+         :shape \A
+         :projection-data projection-data}]))]))
