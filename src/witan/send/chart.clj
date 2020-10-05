@@ -338,7 +338,7 @@
                                        :shape (-> domain-value colors-and-points :point)
                                        :projection-data (into [] (filter #(= domain-value (domain-key %))) projection-data)
                                        :historical-data (into [] (filter #(= domain-value (domain-key %))) historical-data)})))
-                        (remove #(empty? (:projection-data %))))
+                        (remove #(and (empty? (:historical-data %)) (empty? (:projection-data %)))))
                        domain-values))))
          (remove #(empty? (:series %)))
          (map comparison-chart-and-table))
