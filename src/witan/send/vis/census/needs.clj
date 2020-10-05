@@ -47,8 +47,11 @@
 
 ;; FIXME: Create good defaults in the let rather than the function destructuring
 (defn charts
-  ([config census-data]
-   (let [counts (counts-per-calendar-year census-data)
+  ([config census-data insert-zeros?]
+   (let [counts (let [raw-counts (counts-per-calendar-year census-data)]
+                  (if insert-zeros?
+                    (wsc/insert-zero-counts census-data raw-counts)
+                    raw-counts))
          domain-key :need
          chart-base base-comparison-chart-def
          serie-base base-comparison-serie-def
@@ -85,12 +88,10 @@
             (filter (fn [m] (seq (:series m))))
             (map wsc/comparison-chart-and-table))
            titles-and-sets)))
+  ([config census-data]
+   (charts config census-data false))
   ([census-data]
    (let [all-needs (into (sorted-set) (map :need census-data))]
      (charts {:titles-and-sets (concat [["All Needs" all-needs]]
                                        all-chart-specs)}
              census-data))))
-
-
-
-
