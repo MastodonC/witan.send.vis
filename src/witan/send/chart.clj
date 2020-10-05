@@ -386,3 +386,10 @@
 
 (defn save-workbook [file-name wb]
   (xl/save-workbook! file-name wb))
+
+(defn insert-zero-counts [census-data counts]
+  (mapcat (fn [cy] (map #(if (nil? (some #{%} (map :academic-year (val cy))))
+                           {:calendar-year (:calendar-year (-> cy val first)), :academic-year %, :population 0}
+                           (first (filter (fn [ay] (= % (:academic-year ay))) (val cy))))
+                        (into (sorted-set) (map :academic-year census-data))))
+          (group-by :calendar-year counts)))
