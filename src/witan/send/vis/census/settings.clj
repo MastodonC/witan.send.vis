@@ -39,8 +39,11 @@
    ["Special" (sorted-set "SSAF" "SSIS" "SSISS" "SSLAM")]])
 
 (defn charts
-  ([config census-data]
-   (let [counts (counts-per-calendar-year census-data)
+  ([config census-data insert-zeros?]
+   (let [counts (let [raw-counts (counts-per-calendar-year census-data)]
+                  (if insert-zeros?
+                    (wsc/insert-zero-counts census-data raw-counts)
+                    raw-counts))
          domain-key :setting
          chart-base base-comparison-chart-def
          serie-base base-comparison-serie-def
@@ -66,10 +69,10 @@
                           domain-values))))
             (map wsc/comparison-chart-and-table))
            titles-and-sets)))
+  ([config census-data]
+   (charts config census-data false))
   ([census-data]
    (let [all-settings (into (sorted-set) (map :setting census-data))]
      (charts {:titles-and-sets (concat [["All Settings" all-settings]]
                                        all-chart-specs)}
              census-data))))
-
-
