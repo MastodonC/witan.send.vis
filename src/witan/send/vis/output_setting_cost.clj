@@ -5,10 +5,9 @@
 
 (def output-setting-cost-file "Output_Setting_Cost.csv")
 
-(defn base-setting-chart-def [domain-values-lookup]
+(def base-setting-chart-def
   {:legend-label "Settings"
    :domain-key :setting
-   :domain-values-lookup domain-values-lookup
    :x-axis-label "Calendar Year" :x-tick-formatter int
    :y-axis-label "Millions (£)" :y-tick-formatter vis/millions-formatter
    :chartf wsc/zero-y-index})
@@ -16,10 +15,10 @@
 (def base-setting-serie-def {:historical-y-key :population})
 
 (defn charts
-  [settings-lookup projection-data titles-and-sets]
+  [projection-data titles-and-sets]
   (let [domain-key :setting]
     (wsc/domain-charts {:domain-key domain-key
-                        :chart-base-def (base-setting-chart-def settings-lookup)
+                        :chart-base-def base-setting-chart-def
                         :serie-base-def base-setting-serie-def
                         :colors-and-points (wsc/domain-colors-and-points domain-key projection-data)
                         :projection-data projection-data}
@@ -41,6 +40,3 @@
                    (update :max ->double)
                    (update :low-ci ->double)
                    (update :high-ci ->double)))))
-
-
-
