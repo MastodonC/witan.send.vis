@@ -1,7 +1,6 @@
 (ns witan.send.vis.ingest.transitions
   (:require [clojure.data.csv :as csv]
             [clojure.java.io :as io]
-            [clojure.set :as cs]
             [witan.send.vis.ingest :as ingest]))
 
 (defn historical [transitions-file]
@@ -17,36 +16,39 @@
     (with-open [w (io/writer file-name)]
       (csv/write-csv w (into [header] (mapv extraction-fn transitions))))))
 
-(defn transition-calendar-years [transitions]
-  (into (sorted-set)
-        (map :calendar-year)
-        transitions))
+(defn transition-s1->census [{:keys [calendar-year setting-1 need-1 academic-year-1]}]
+  {:anon-ref -1
+   :calendar-year calendar-year
+   :setting setting-1
+   :need need-1
+   :academic-year academic-year-1})
 
-(defn max-transitions-calendar-year [transitions]
-  (apply max (transition-calendar-years transitions)))
+(defn transition-s2->census [{:keys [calendar-year setting-2 need-2 academic-year-2]}]
+  {:anon-ref -1
+   :calendar-year (inc calendar-year)
+   :setting setting-2
+   :need need-2
+   :academic-year academic-year-2})
 
-(defn max-census-year-from-transitions [transitions]
-  (inc (max-transitions-calendar-year transitions)))
+(defn transition->census-like [first-transition-year transition]
+  (if (= first-transition-year (:calendar-year transition))
+    [(transition-s1->census transition)
+     (transition-s2->census transition)]
+    [(transition-s2->census transition)]))
 
 (defn ->census
-  "This is a one way, destructive process that turns transitions data
-  into a yearly census format."
+  "Create a census shaped data structure for further charting output. It
+  can never be a proper census file as we don't have the pseudo IDs
+  that would allow us to trace longitudinally."
   [transitions]
-  (let [max-calendar-year (max-transitions-calendar-year transitions)
-        t1 (into []
-                 (comp
-                  (map #(select-keys % [:calendar-year :setting-1 :need-1 :academic-year-1]))
-                  (map #(cs/rename-keys % {:setting-1 :setting :need-1 :need :academic-year-1 :academic-year})))
-                 transitions)
-        t2 (into []
-                 (comp
-                  (filter #(= (:calendar-year %) max-calendar-year))
-                  (map #(select-keys % [:calendar-year :setting-2 :need-2 :academic-year-2]))
-                  (map #(cs/rename-keys % {:setting-2 :setting :need-2 :need :academic-year-2 :academic-year}))
-                  (map #(update % :calendar-year inc)))
-                 transitions)]
-    (->> (into t1 t2)
-         (filter #(not= "NONSEND" (:need %))))))
+  (let [first-transition-year (first (into (sorted-set) (map :calendar-year transitions)))]
+    (into []
+          (comp
+           (mapcat (partial transition->census-like first-transition-year))
+           (remove #(= (:setting %) "NONSEND"))
+           (remove #(= (:need %) "NONSEND")))
+          transitions)))
+
 
 (defn total-population-per-calendar-year [transitions]
   (transduce
