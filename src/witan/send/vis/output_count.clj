@@ -44,3 +44,33 @@
                :shape \A
                :historical-data historical-data
                :projection-data projection-data)]))]))
+
+(comment
+
+  (require '[cljplot.config :as cfg])
+  (require '[witan.send.vis.ingest.transitions :as vit])
+  
+  (def plot-cfg
+    (swap! cfg/configuration (fn [c]
+                               (-> c
+                                   (assoc-in [:legend :font] "Open Sans Bold")
+                                   (assoc-in [:legend :font-size] 24)))))
+
+  
+  (def historic (vit/historical "../witan.send/data/demo/data/transitions.csv"))
+  (def projection (output-count (str "../witan.send/data/demo/results/" output-count-file)))
+  
+  (def historic-counts (vit/total-population-per-calendar-year historic))
+
+  (def count-charts (into []
+                          (map wsc/comparison-chart-and-table)
+                          (chart
+                           "SEND Population"
+                           historic-counts
+                           projection)))
+
+  (run!
+   (partial wsc/save-chart-by-title "demo/charts/count-")
+   count-charts)
+  
+  )

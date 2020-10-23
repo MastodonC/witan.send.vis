@@ -44,3 +44,43 @@
                    (update :high-ci ->double)))))
 
 
+(comment
+
+  (require '[cljplot.config :as cfg])
+  (require '[witan.send.vis.ingest.transitions :as vit])
+  
+  (def plot-cfg
+    (swap! cfg/configuration (fn [c]
+                               (-> c
+                                   (assoc-in [:legend :font] "Open Sans Bold")
+                                   (assoc-in [:legend :font-size] 24)))))
+
+  
+  (def output-setting-csv (str "../witan.send/data/demo/results/" output-setting-file))
+
+  (def historic (vit/historical "../witan.send/data/demo/data/transitions.csv"))
+  
+  (def setting-data (output-setting output-setting-csv))
+  (def history-setting-counts-per-cy (vit/settings-counts-per-calendar-year historic))
+
+  (def settings (into (sorted-set)
+                      (map :setting)
+                      setting-data))
+
+  (def setting-lookup
+    (into (sorted-map)
+          (map (fn [s] [s s]))
+          settings))
+
+  (def settings-charts (charts setting-lookup
+                               historic
+                               setting-data 
+                               [["A-F" (sorted-set "A" "B" "C" "D" "E" "F")]
+                                ["G-M" (sorted-set "G" "H" "I" "J" "K" "L" "M")]
+                                ["N-S" (sorted-set "N" "O" "P" "Q" "R" "S")]]))
+
+  (run!
+   (partial wsc/save-chart-by-title "demo/charts/setting-")
+   settings-charts)
+  
+  )
