@@ -40,11 +40,11 @@
 
 (defn charts
   ([config census-data insert-zeros?]
-   (let [counts (let [raw-counts (counts-per-calendar-year census-data)]
+   (let [domain-key :setting
+         counts (let [raw-counts (counts-per-calendar-year census-data)]
                   (if insert-zeros?
-                    (wsc/insert-zero-counts census-data raw-counts)
+                    (wsc/insert-zero-counts census-data raw-counts domain-key)
                     raw-counts))
-         domain-key :setting
          chart-base base-comparison-chart-def
          serie-base base-comparison-serie-def
          {:keys [titles-and-sets colors-and-points]

@@ -390,9 +390,32 @@
 (defn save-workbook [file-name wb]
   (xl/save-workbook! file-name wb))
 
-(defn insert-zero-counts [census-data counts]
-  (mapcat (fn [cy] (map (fn [ay] (if-let [ay-map (some (fn [m] (when (#{ay} (:academic-year m)) m)) (val cy))]
-                                   ay-map
-                                   {:calendar-year (:calendar-year (-> cy val first)), :academic-year ay, :population 0}))
-                        (into (sorted-set) (map :academic-year census-data))))
-          (group-by :calendar-year counts)))
+(defn insert-zero-counts
+  ;; FIXME: This assumes it is for academic year.
+  ([census-data counts]
+   (into []
+         (mapcat (fn [cy]
+                   (map
+                    (fn [ay] (if-let [ay-map (some (fn [m] (when (#{ay} (:academic-year m)) m)) (val cy))]
+                               ay-map
+                               {:calendar-year (:calendar-year (-> cy val first))
+                                :academic-year ay
+                                :population 0}))
+                    (into (sorted-set)
+                          (map :academic-year)
+                          census-data))))
+         (group-by :calendar-year counts)))
+  ;; FIXME: Below is more righterer
+  ([census-data counts domain-key]
+   (into []
+         (mapcat (fn [cy]
+                   (map
+                    (fn [domain-item] (if-let [domain-map (some (fn [m] (when (#{domain-item} (domain-key m)) m)) (val cy))]
+                                        domain-map
+                                        {:calendar-year (:calendar-year (-> cy val first))
+                                         domain-key domain-item
+                                         :population 0}))
+                    (into (sorted-set)
+                          (map domain-key)
+                          census-data))))
+         (group-by :calendar-year counts))))
