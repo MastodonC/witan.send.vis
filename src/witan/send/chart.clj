@@ -317,9 +317,12 @@
         series))
 
 (defn comparison-chart-and-table [comparison-defs]
-  (-> comparison-defs
-      (assoc :chart (comparison-chart comparison-defs))
-      (assoc :table (comparison-table comparison-defs))))
+  (try
+    (-> comparison-defs
+        (assoc :chart (comparison-chart comparison-defs))
+        (assoc :table (comparison-table comparison-defs)))
+    (catch Exception e
+      (throw (ex-info "Unable to create comparison table and charts" {:comparison-defs comparison-defs} e)))))
 
 (defn domain-charts [{:keys [domain-key chart-base-def serie-base-def colors-and-points historical-data projection-data]} titles-and-sets]
   (into []
