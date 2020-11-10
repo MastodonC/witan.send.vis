@@ -1,5 +1,6 @@
 (ns witan.send.chart
   (:require [cljplot.build :as plotb]
+            [cljplot.config :as cfg]
             [cljplot.core :as plot]
             [cljplot.render :as plotr]
             [clojure.string :as s]
@@ -81,7 +82,12 @@
       chart-spec)))
 
 (defn zero-y-index [{:keys [x-axis y-axis legend title series size]}]
-  (let [size (or size {:width 1539 :height 1037 :background (color/color :white)}) ;; 1539x1037 is almost exactly the right size to go into the slide
+  (let [_config (swap! cfg/configuration
+                       (fn [c]
+                         (-> c
+                             (assoc-in [:legend :font] "Open Sans Bold")
+                             (assoc-in [:legend :font-size] 24))))
+        size (or size {:width 1539 :height 1037 :background (color/color :white)}) ;; 1539x1037 is almost exactly the right size to go into the slide
         title-format (or (:format title) {:font-size 36 :font "Open Sans Bold" :font-style :bold :margin 36})]
     (-> (apply plotb/series (into [[:grid]] series))
         (plotb/preprocess-series)
