@@ -354,36 +354,43 @@
         titles-and-sets))
 
 (defn ->byte-array [^BufferedImage image]
-  (with-open [out (java.io.ByteArrayOutputStream.)]
-    (ImageIO/write image "png" out)
-    (.toByteArray out)))
+  (when image
+    (with-open [out (java.io.ByteArrayOutputStream.)]
+      (ImageIO/write image "png" out)
+      (.toByteArray out))))
+
+(defn excel-tab-string [tab-name]
+  (if (< 31 (count tab-name))
+    (subs tab-name 0 31)
+    tab-name))
 
 (defn ->workbook [comparison-defs]
   (let [wb-data (into []
                       (mapcat (fn [cd]
-                                [(:title cd)
-                                 (:table cd)]))
+                                [(excel-tab-string (:title cd "Missing Title"))
+                                 (:table cd [["No Data"]])]))
                       comparison-defs)
         wb-charts (into []
                         (map (fn [cd]
-                               [(:title cd)
+                               [(excel-tab-string (:title cd))
                                 (-> cd :chart :chart-image :buffer ->byte-array)]))
                         comparison-defs)
         wb (apply xl/create-workbook wb-data)]
     (run! (fn [[sheet-name img]]
             (try
-              (let [ ;; int pictureIdx = wb.addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
-                    pic-idx (.addPicture wb img Workbook/PICTURE_TYPE_PNG)
-                    sheet (xl/select-sheet sheet-name wb)
-                    helper (.getCreationHelper wb)
-                    drawing (.createDrawingPatriarch sheet)
-                    anchor (.createClientAnchor helper)
-                    _ (.setCol1 anchor 14)
-                    _ (.setRow1 anchor 2)
-                    ;; Picture pict = drawing.createPicture(anchor, pictureIdx);
-                    ;; pict.resize();
-                    pict (.createPicture drawing anchor pic-idx)]
-                (.resize pict))
+              (when img
+                (let [ ;; int pictureIdx = wb.addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
+                      pic-idx (.addPicture wb img Workbook/PICTURE_TYPE_PNG)
+                      sheet (xl/select-sheet sheet-name wb)
+                      helper (.getCreationHelper wb)
+                      drawing (.createDrawingPatriarch sheet)
+                      anchor (.createClientAnchor helper)
+                      _ (.setCol1 anchor 14)
+                      _ (.setRow1 anchor 2)
+                      ;; Picture pict = drawing.createPicture(anchor, pictureIdx);
+                      ;; pict.resize();
+                      pict (.createPicture drawing anchor pic-idx)]
+                  (.resize pict)))
               (catch Exception e
                 (throw (ex-info (str "Failed to create sheet. " sheet-name) {:sheet-name sheet-name} e)))))
           wb-charts)
