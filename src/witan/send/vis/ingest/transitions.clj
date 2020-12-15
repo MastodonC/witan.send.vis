@@ -49,6 +49,17 @@
            (remove #(= (:need %) "NONSEND")))
           transitions)))
 
+(defn ->mover-from-census
+  "Create a census shaped data structure for further charting output, including
+  only the 's1' side of the transition i.e. the state a mover transition started in"
+  [transitions]
+  (map transition-s1->census transitions))
+
+(defn ->mover-to-census
+  "Create a census shaped data structure for further charting output, including
+  only the 's2' side of the transition i.e. the state a mover transition ended in"
+  [transitions]
+  (map transition-s2->census transitions))
 
 (defn total-population-per-calendar-year [transitions]
   (transduce
