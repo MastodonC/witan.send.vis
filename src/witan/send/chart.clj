@@ -92,11 +92,11 @@
     (-> (apply plotb/series (into [[:grid]] series))
         (plotb/preprocess-series)
         (plotb/update-scale :x :fmt (:tick-formatter x-axis))
-        (update-chart-x-axis-ticks series)
+        (update-chart-x-axis-ticks series) ;; str x-axes breaks here
         (plotb/update-scale :y :fmt (:tick-formatter y-axis))
         (zero-index-numerical-y-axes)
         (update-chart-y-axis-ticks series)
-        (plotb/add-axes :bottom {:ticks {:font-size 24 :font-style nil}})
+        (plotb/add-axes :bottom {:ticks {:font-size 24 :font-style nil}}) ;; str x-axes breaks here
         (plotb/add-axes :left {:ticks {:font-size 24 :font-style nil}})
         (plotb/add-label :bottom (:label x-axis) {:font-size 36 :font "Open Sans" :font-style nil})
         (plotb/add-label :left (:label y-axis) {:font-size 36 :font "Open Sans" :font-style nil})
