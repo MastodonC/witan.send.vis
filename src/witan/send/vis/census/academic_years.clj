@@ -11,7 +11,7 @@
    :legend-spec [] ;; empty base legend
    :domain-key :academic-year
    :domain-values-lookup ay/ay-lookup
-   :x-axis-label "Calendar Year" :x-tick-formatter str
+   :x-axis-label "Calendar Year" :x-tick-formatter int
    :y-axis-label "Population" :y-tick-formatter int
    :chartf wsc/zero-y-index})
 

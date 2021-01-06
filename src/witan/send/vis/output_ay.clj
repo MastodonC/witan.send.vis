@@ -77,18 +77,18 @@
 
   (require '[cljplot.config :as cfg])
   (require '[witan.send.vis.ingest.transitions :as vit])
-  
+
   (def plot-cfg
     (swap! cfg/configuration (fn [c]
                                (-> c
                                    (assoc-in [:legend :font] "Open Sans Bold")
                                    (assoc-in [:legend :font-size] 24)))))
 
-  
+
   (def output-ay-csv "../witan.send/data/demo/results/Output_AY.csv")
 
   (def historic (vit/historical "../witan.send/data/demo/data/transitions.csv"))
-  
+
   (def ay-data (output-ay output-ay-csv))
   (def history-ay-counts-per-cy (vit/ay-counts-per-calendar-year historic))
 
@@ -97,5 +97,5 @@
   (run!
    (partial wsc/save-chart-by-title "demo/charts/ay-")
    ay-charts)
-  
+
   )

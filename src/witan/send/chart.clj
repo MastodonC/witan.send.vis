@@ -133,7 +133,7 @@
 (defn base-chart-spec
   [{:keys [title chartf x-tick-formatter y-tick-formatter x-axis-label y-axis-label legend-label legend-spec]
     :or {chartf zero-y-index
-         x-tick-formatter str
+         x-tick-formatter int
          y-tick-formatter int
          x-axis-label "Calendar Year"
          y-axis-label "Population"
