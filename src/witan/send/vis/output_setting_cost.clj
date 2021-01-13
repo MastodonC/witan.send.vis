@@ -5,9 +5,10 @@
 
 (def output-setting-cost-file "Output_Setting_Cost.csv")
 
-(def base-setting-chart-def
+(defn base-setting-chart-def [domain-values-lookup]
   {:legend-label "Settings"
    :domain-key :setting
+   :domain-values-lookup domain-values-lookup
    :x-axis-label "Calendar Year" :x-tick-formatter int
    :y-axis-label "Millions (£)" :y-tick-formatter vis/millions-formatter
    :chartf wsc/zero-y-index})
