@@ -19,7 +19,7 @@
   [projection-data titles-and-sets]
   (let [domain-key :setting]
     (wsc/domain-charts {:domain-key domain-key
-                        :chart-base-def base-setting-chart-def
+                        :chart-base-def (base-setting-chart-def {})
                         :serie-base-def base-setting-serie-def
                         :colors-and-points (wsc/domain-colors-and-points domain-key projection-data)
                         :projection-data projection-data}
