@@ -270,7 +270,9 @@
             {:legend-label legend-label
              :color color
              :shape (legend-shape shape)
-             :hide-legend hide-legend
+             :hide-legend (if (seq projection-data)
+                            hide-legend
+                            false)
              :data (wss/maps->line {:x-key :calendar-year
                                     :y-key historical-y-key
                                     :color color
