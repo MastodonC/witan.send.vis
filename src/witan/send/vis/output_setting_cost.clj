@@ -6,14 +6,19 @@
 (def output-setting-cost-file "Output_Setting_Cost.csv")
 
 (defn base-setting-chart-def [domain-values-lookup]
-  {:legend-label "Settings"
+  {:legend-label "Data Sets"
    :domain-key :setting
    :domain-values-lookup domain-values-lookup
    :x-axis-label "Calendar Year" :x-tick-formatter int
    :y-axis-label "Millions (£)" :y-tick-formatter vis/millions-formatter
    :chartf wsc/zero-y-index})
 
-(def base-setting-serie-def {:historical-y-key :population})
+(def base-cost-comparison-chart-def
+  {:legend-label "Data Sets"
+   :domain-key :cost
+   :x-axis-label "Calendar Year"
+   :y-tick-formatter vis/millions-formatter
+   :y-axis-label "Cost (Millions £)"})
 
 (defn charts
   [projection-data titles-and-sets]
