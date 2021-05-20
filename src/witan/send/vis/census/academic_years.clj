@@ -33,12 +33,12 @@
 
 
 (def all-chart-specs
-  [["Early Years" ay/early-years]
-   ["Key Stage 1" ay/key-stage-1]
-   ["Key Stage 2" ay/key-stage-2]
-   ["Key Stage 3" ay/key-stage-3]
-   ["Key Stage 4" ay/key-stage-4]
-   ["Key Stage 5" ay/key-stage-5]
+  [["EYS" ay/early-years]
+   ["KS1" ay/key-stage-1]
+   ["KS2" ay/key-stage-2]
+   ["KS3" ay/key-stage-3]
+   ["KS4" ay/key-stage-4]
+   ["KS5" ay/key-stage-5]
    ["NCY 15+" ay/ncy-15+]
    ["All NCYs" (concat ay/early-years ay/key-stage-1 ay/key-stage-2 ay/key-stage-3 ay/key-stage-4 ay/key-stage-5 ay/ncy-15+)]])
 
@@ -62,14 +62,16 @@
                     :title title
                     :series
                     (into []
-                          (map (fn [domain-value]
-                                 (merge serie-base
-                                        {:legend-label domain-value
-                                         :hide-legend false
-                                         :color (-> domain-value colors-and-points :color)
-                                         :shape (-> domain-value colors-and-points :point)
-                                         :historical-data (into [] (filter #(= domain-value (domain-key %))) ay-counts)})))
+                          (comp (map (fn [domain-value]
+                                       (merge serie-base
+                                              {:legend-label domain-value
+                                               :hide-legend false
+                                               :color (-> domain-value colors-and-points :color)
+                                               :shape (-> domain-value colors-and-points :point)
+                                               :historical-data (into [] (filter #(= domain-value (domain-key %))) ay-counts)})))
+                                (remove #(empty? (:historical-data %))))
                           domain-values))))
+            (remove #(empty? (:series %)))
             (map wsc/comparison-chart-and-table))
            titles-and-sets)))
   ([config census-data]

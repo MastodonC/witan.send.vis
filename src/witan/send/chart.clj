@@ -12,10 +12,10 @@
            java.io.ByteArrayOutputStream
            org.apache.poi.ss.usermodel.Workbook))
 
-(def orange (nth (color/palette-presets :tableau-20) 2))
-(def blue (nth (color/palette-presets :tableau-20) 5))
-(def green (nth (color/palette-presets :tableau-20) 4))
-(def palette (color/palette-presets :tableau-20))
+(def orange (nth (color/palette :tableau-20) 2))
+(def blue (nth (color/palette :tableau-20) 5))
+(def green (nth (color/palette :tableau-20) 4))
+(def palette (color/palette :tableau-20))
 (def points [\V \\
              \^ \|
              \O \/
