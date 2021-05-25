@@ -54,7 +54,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 (defn multi-line [data]
-  (let [pal (color/palette-presets :tableau-20-2)
+  (let [pal (color/palette :tableau-20-2)
         points [\O \s \o \S \+ \x \v \A \V \^]
         chart-spec (into []
                          (map (fn make-c-and-l
@@ -202,7 +202,7 @@
     (let [data (into (sorted-map)
                      (filter (fn [[academic-year projection]] (further-education? academic-year)))
                      multi-line-data)
-          pal (color/palette-presets :tableau-20-2)
+          pal (color/palette :tableau-20-2)
           points [\O \s \o \S \+ \x]
           series (into []
                        (map (fn make-chart-series
@@ -314,7 +314,7 @@
 
   (def settings-chart
     (let [data setting-multi-line-data
-          pal (color/palette-presets :tableau-20-2)
+          pal (color/palette :tableau-20-2)
           points [\O \s \o \S \+ \x]
           series (into []
                        (map (fn make-chart-series
@@ -363,7 +363,7 @@
 
   (def settings-chart
     (let [data setting-multi-line-data
-          pal (color/palette-presets :tableau-20-2)
+          pal (color/palette :tableau-20-2)
           points [\O \s \o \S \+ \x]
           series (into []
                        (map (fn make-chart-series
@@ -400,7 +400,7 @@
 
 (defn settings-cost-grouped-bar-chart [data]
   (let [domain (into (sorted-set) (map (fn [d] (:calendar-year d)) data))
-        pal (color/palette-presets :tableau-20-2)
+        pal (color/palette :tableau-20-2)
         series [[:stack-vertical [:bar (->> data
                                             (group-by :setting)
                                             (map (fn [[setting data]] [setting (mapv (fn [x] (:median x)) data)]))
@@ -420,7 +420,7 @@
 
 (defn settings-population-grouped-bar-chart [data]
   (let [domain (into (sorted-set) (map (fn [d] (:calendar-year d)) data))
-        pal (color/palette-presets :tableau-20-2)
+        pal (color/palette :tableau-20-2)
         series [[:stack-vertical [:bar (->> data
                                             (group-by :setting)
                                             (map (fn [[setting data]] [setting (mapv (fn [x] (:median x)) data)]))
@@ -447,7 +447,7 @@
 
 (defn settings-population-stacked-bar-chart [data]
   (let [domain (reverse (into (sorted-set) (map (fn [d] (:setting d)) data)))
-        pal (color/palette-presets :tableau-20-2)
+        pal (color/palette :tableau-20-2)
         series [[:stack-vertical [:sbar (->> data
                                              (group-by :calendar-year)
                                              (map (fn [[setting data-for-year]]
