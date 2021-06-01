@@ -47,16 +47,18 @@
                     raw-counts))
          chart-base base-comparison-chart-def
          serie-base base-comparison-serie-def
-         {:keys [titles-and-sets colors-and-points]
+         {:keys [titles-and-sets colors-and-points watermark]
           :or {titles-and-sets (concat [["All Settings" (into (sorted-set) (mapcat second) all-chart-specs)]]
                                        all-chart-specs)
-               colors-and-points (wsc/domain-colors-and-points domain-key census-data)}} config]
+               colors-and-points (wsc/domain-colors-and-points domain-key census-data)
+               watermark ""}} config]
      (into []
            (comp
             (map (fn [[title domain-values]]
                    (assoc
                     chart-base
                     :title title
+                    :watermark watermark
                     :series
                     (into []
                           (comp

@@ -5,6 +5,7 @@
             [cljplot.render :as plotr]
             [clojure.string :as s]
             [clojure2d.color :as color]
+            [clojure2d.core :as c]
             [dk.ative.docjure.spreadsheet :as xl]
             [witan.send.series :as wss])
   (:import javax.imageio.ImageIO
@@ -81,7 +82,16 @@
       (plotb/update-scale chart-spec :x :ticks x-count)
       chart-spec)))
 
-(defn zero-y-index [{:keys [x-axis y-axis legend title series size]}]
+(defn add-watermark [c s]
+  (let [text-x-anchor (-  (:w c) 10)
+        text-y-anchor (- (:h c) 10)]
+    (c/with-canvas-> c
+      (c/set-color :gray)
+      (c/set-font-attributes 10 :italic)
+      (c/text s text-x-anchor text-y-anchor :right))))
+
+(defn zero-y-index [{:keys [x-axis y-axis legend title series size watermark]
+                     :or {watermark ""}}]
   (let [_config (swap! cfg/configuration
                        (fn [c]
                          (-> c
@@ -102,7 +112,8 @@
         (plotb/add-label :left (:label y-axis) {:font-size 36 :font "Open Sans" :font-style nil})
         (plotb/add-label :top (:label title) title-format)
         (plotb/add-legend (:label legend) (:legend-spec legend))
-        (plotr/render-lattice size))))
+        (plotr/render-lattice size)
+        (add-watermark watermark))))
 
 ;; FIXME: Get a passed in dash to work here
 ;; we only add to the legend if it is a line with a point
@@ -131,7 +142,7 @@
     {:color :black :stroke {:size 4 :dash [2.0]} :font "Open Sans" :font-size 36}]])
 
 (defn base-chart-spec
-  [{:keys [title chartf x-tick-formatter y-tick-formatter x-axis-label y-axis-label legend-label legend-spec]
+  [{:keys [title chartf x-tick-formatter y-tick-formatter x-axis-label y-axis-label legend-label legend-spec watermark]
     :or {chartf zero-y-index
          x-tick-formatter int
          y-tick-formatter int
@@ -144,7 +155,8 @@
    :y-axis {:tick-formatter y-tick-formatter :label y-axis-label :format {:font-size 24 :font "Open Sans"}}
    :legend {:label legend-label
             :legend-spec legend-spec}
-   :chartf chartf})
+   :chartf chartf
+   :watermark watermark})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Old chart code
@@ -299,7 +311,8 @@
      (select-keys comparison-defs [:title :chartf
                                    :x-tick-formatter :y-tick-formatter
                                    :x-axis-label :y-axis-label
-                                   :legend-label :legend-spec])))
+                                   :legend-label :legend-spec
+                                   :watermark])))
    series))
 
 
