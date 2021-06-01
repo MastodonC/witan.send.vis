@@ -51,15 +51,17 @@
          domain-key :academic-year
          chart-base base-ay-comparison-chart-def
          serie-base base-ay-comparison-serie-def
-         {:keys [titles-and-sets colors-and-points]
+         {:keys [titles-and-sets colors-and-points watermark]
           :or {titles-and-sets all-chart-specs
-               colors-and-points (wsc/domain-colors-and-points domain-key census-data)}} config]
+               colors-and-points (wsc/domain-colors-and-points domain-key census-data)
+               watermark ""}} config]
      (into []
            (comp
             (map (fn [[title domain-values]]
                    (assoc
                     chart-base
                     :title title
+                    :watermark watermark
                     :series
                     (into []
                           (comp (map (fn [domain-value]
