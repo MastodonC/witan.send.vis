@@ -22,10 +22,13 @@
   {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
    :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
    :legend {:label "Population"
-            :legend-spec [[:line "SEN2"
-                           {:color wsc/orange :stroke {:size 4} :shape \O :font "Open Sans" :font-size 36}]
-                          [:line "Total count of EHCPs"
-                           {:color wsc/blue :stroke {:size 4} :shape \^ :font "Open Sans" :font-size 36}]]} ;; flip shape in legend
+            :legend-spec (if (empty? sen2)
+                           [[:line "Total count of EHCPs"
+                             {:color wsc/blue :stroke {:size 4} :shape \^ :font "Open Sans" :font-size 36}]]
+                           [[:line "SEN2"
+                             {:color wsc/orange :stroke {:size 4} :shape \O :font "Open Sans" :font-size 36}]
+                            [:line "Total count of EHCPs"
+                             {:color wsc/blue :stroke {:size 4} :shape \^ :font "Open Sans" :font-size 36}]])} ;; flip shape in legend
    :title  {:label (str la " Count of EHCPs")
             :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}
    :watermark watermark
