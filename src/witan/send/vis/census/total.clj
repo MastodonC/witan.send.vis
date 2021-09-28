@@ -18,27 +18,32 @@
               (filter (comp years :calendar-year)))
           pop)))
 
-(defn total-send-population [total-population la sen2 watermark]
-  {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
-   :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
-   :legend {:label "Population"
-            :legend-spec [[:line "SEN2"
-                           {:color wsc/orange :stroke {:size 4} :shape \O :font "Open Sans" :font-size 36}]
-                          [:line "Total count of EHCPs"
-                           {:color wsc/blue :stroke {:size 4} :shape \^ :font "Open Sans" :font-size 36}]]} ;; flip shape in legend
-   :title  {:label (str la " Count of EHCPs")
-            :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}
-   :watermark watermark
-   :series [(wss/maps->line {:x-key :calendar-year
-                             :y-key :population
-                             :color wsc/orange
-                             :point \O}
-                            sen2)
-            (wss/maps->line {:x-key :calendar-year
-                             :y-key :population
-                             :color wsc/blue
-                             :point \V}
-                            total-population)]})
+(defn total-send-population
+  ([total-population la sen2 watermark legend-spec]
+   {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
+    :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
+    :legend {:label "Population"
+             :legend-spec (if legend-spec
+                            legend-spec
+                            [[:line "SEN2"
+                              {:color wsc/orange :stroke {:size 4} :shape \O :font "Open Sans" :font-size 36}]
+                             [:line "Total count of EHCPs"
+                              {:color wsc/blue :stroke {:size 4} :shape \^ :font "Open Sans" :font-size 36}]])} ;; flip shape in legend
+    :title  {:label (str la " Count of EHCPs")
+             :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}
+    :watermark watermark
+    :series [(wss/maps->line {:x-key :calendar-year
+                              :y-key :population
+                              :color wsc/orange
+                              :point \O}
+                             sen2)
+             (wss/maps->line {:x-key :calendar-year
+                              :y-key :population
+                              :color wsc/blue
+                              :point \V}
+                             total-population)]})
+  ([total-population la sen2 watermark]
+   (total-send-population total-population la sen2 watermark false)))
 
 (defn chart [title total-send]
   [(wsc/comparison-chart-and-table (assoc total-send :title title))])
