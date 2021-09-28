@@ -19,8 +19,6 @@
           pop)))
 
 (defn total-send-population
-  ([total-population la sen2 watermark]
-   (total-send-population total-population la sen2 watermark false))
   ([total-population la sen2 watermark legend-spec]
    {:x-axis {:tick-formatter int :label "Calendar Year" :format {:font-size 24 :font "Open Sans"}}
     :y-axis {:tick-formatter int :label "Population" :format {:font-size 24 :font "Open Sans"}}
@@ -43,7 +41,9 @@
                               :y-key :population
                               :color wsc/blue
                               :point \V}
-                             total-population)]}))
+                             total-population)]})
+  ([total-population la sen2 watermark]
+   (total-send-population total-population la sen2 watermark false)))
 
 (defn chart [title total-send]
   [(wsc/comparison-chart-and-table (assoc total-send :title title))])
