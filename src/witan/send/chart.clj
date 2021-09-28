@@ -326,7 +326,11 @@
           "min" "low 95pc bound" "q1" "median" "q3" "high 95pc bound" "max" "iqr"]]
         (comp
          (map (fn [{:keys [legend-label projection-data historical-data]}]
-                {:historical-data (into [] (map (fn [record] (assoc record :label legend-label))) historical-data)
+                {:historical-data (into [] (map (fn [record] (assoc record
+                                                                    :label legend-label
+                                                                    :academic-year (if (= 99 (:academic-year record))
+                                                                                     "Total"
+                                                                                     (:academic-year record))))) historical-data)
                  :projection-data (into [] (map (fn [record] (assoc record :label legend-label))) projection-data)}))
          (mapcat (juxt :historical-data :projection-data))
          cat
@@ -357,7 +361,10 @@
                        (comp
                         (map (fn [domain-value]
                                (merge serie-base-def
-                                      {:legend-label (get-in chart-base-def [:domain-values-lookup domain-value] domain-value)
+                                      {:legend-label (let [label (get-in chart-base-def [:domain-values-lookup domain-value] domain-value)]
+                                                       (if (= label 99)
+                                                         "Total"
+                                                         label))
                                        :color (-> domain-value colors-and-points :color)
                                        :shape (-> domain-value colors-and-points :point)
                                        :projection-data (into [] (filter #(= domain-value (domain-key %))) projection-data)
