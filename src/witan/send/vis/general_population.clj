@@ -37,7 +37,7 @@
    ["General Population NCY 15+" ay/ncy-15+]
    ["General Population All NCYs" (concat ay/early-years ay/key-stage-1 ay/key-stage-2 ay/key-stage-3 ay/key-stage-4 ay/key-stage-5 ay/ncy-15+)]
    ["Total General Population" #{99}]
-   ;; 99 is used as a placeholder where data structures require a number be present but is
+   ;; FIXME: 99 is used as a placeholder where data structures require a number be present but is
    ;; converted to a more informative string ("Total") when outputting to a chart and spreadsheet
    ])
 
@@ -47,7 +47,7 @@
         (fn [[grp-key values]]
           {:calendar-year grp-key
            :academic-year 99
-           ;; 99 is used as a placeholder where data structures require a number be present but is
+           ;; FIXME: 99 is used as a placeholder where data structures require a number be present but is
            ;; converted to a more informative string ("Total") when outputting to a chart and spreadsheet
            :population (reduce + (map :population values))}))
        (sort-by :calendar-year)))
@@ -61,7 +61,7 @@
                          :serie-base-def base-gp-serie-def
                          :colors-and-points (merge (wsc/domain-colors-and-points domain-key historical-data)
                                                    {99 {:color [152.0 223.0 138.0 255.0], :point \V}})
-                         ;; 99 is used as a placeholder where data structures require a number be present but is
+                         ;; FIXME: 99 is used as a placeholder where data structures require a number be present but is
                          ;; converted to a more informative string ("Total") when outputting to a chart and spreadsheet
                          :historical-data (concat historical-data
                                                   (sum-population historical-data))}
