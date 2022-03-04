@@ -6,7 +6,7 @@
             [clojure.string :as s]
             [clojure2d.color :as color]
             [clojure2d.core :as c]
-            [dk.ative.docjure.spreadsheet :as xl]
+            [kixi.large.legacy :as xl]
             [witan.send.series :as wss])
   (:import javax.imageio.ImageIO
            java.awt.image.BufferedImage

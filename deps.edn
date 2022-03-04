@@ -4,7 +4,7 @@
          cljplot/cljplot       {:mvn/version "0.0.2a-SNAPSHOT"}
          net.cgrand/xforms     {:mvn/version "0.18.2"}
          clj-pdf/clj-pdf       {:mvn/version "2.4.0"}
-         dk.ative/docjure      {:mvn/version "1.13.0"}
+         kixi.large/kixi.large {:local/root "../kixi.large"}
          witan/witan.plot      {:local/root "../witan.plot"}
          witan/witan.send      {:local/root "../witan.send"}
          witan/witan.phyrexian {:local/root "../witan.phyrexian"}}
