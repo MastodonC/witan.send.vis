@@ -7,7 +7,7 @@
          kixi.large/kixi.large {:local/root "../kixi.large"}
          witan/witan.plot      {:local/root "../witan.plot"}
          witan/witan.send      {:local/root "../witan.send"}
-         witan/witan.phyrexian {:local/root "../witan.phyrexian"}}
+         witan/witan.sen2      {:local/root "../witan.sen2"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps  {org.clojure/test.check {:mvn/version "0.10.0"}}}
