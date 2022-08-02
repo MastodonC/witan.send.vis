@@ -15,9 +15,9 @@
                 (map (fn [year] (assoc {}
                                        :calendar-year year
                                        :population (-> (some
-                                                        #(when (= year (get % "time_period"))
+                                                        #(when (= year (:time_period %))
                                                            %) pop)
-                                                       (get "Total_all"))))))
+                                                       :Total_all)))))
             years)
       [])))
 
