@@ -4,11 +4,11 @@
             [witan.sen2.sen2 :as sen]
             [tablecloth.api :as tc]))
 
-(defn sen2 [LA census]
-  "Requires a local authority or gss code as a string"
+(defn sen2 [s la-or-gss census]
+  "Requires a local authority or gss code as a string, the key :la or :gss and census data"
   (let [years (into (sorted-set) (map :calendar-year census))
-        pop (some-> LA
-                    sen/generate-current-pop
+        pop (some-> s
+                    (sen/generate-current-pop la-or-gss)
                     (tc/rows :as-maps))]
     (if pop
       (into [] (comp
