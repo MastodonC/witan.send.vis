@@ -1,22 +1,25 @@
 (ns witan.send.vis.census.total
   (:require [witan.send.chart :as wsc]
             [witan.send.series :as wss]
-            [witan.phyrexian.sen2-processing-tool :as sen]))
+            [witan.sen2.sen2 :as sen]
+            [tablecloth.api :as tc]))
 
-(defn key-to-year [k]
-  (read-string (str "20" (-> k key name (clojure.string/split #"-") second))))
-
-(defn sen2 [LA district-or-la census]
-  "Requires a local authority/district as a string and a key (:district or :la)."
+(defn sen2 [s la-or-gss census]
+  "Requires a local authority or gss code as a string, the key :la or :gss and census data"
   (let [years (into (sorted-set) (map :calendar-year census))
-        gss (into [] (sen/search-gss LA district-or-la))
-        pop (sen/generate-current-pop gss)]
-    (into [] (comp
-              (map #(assoc {}
-                           :calendar-year (key-to-year %)
-                           :population (val %)))
-              (filter (comp years :calendar-year)))
-          pop)))
+        pop (some-> s
+                    (sen/generate-current-pop la-or-gss)
+                    (tc/rows :as-maps))]
+    (if pop
+      (into [] (comp
+                (map (fn [year] (assoc {}
+                                       :calendar-year year
+                                       :population (-> (some
+                                                        #(when (= year (:time_period %))
+                                                           %) pop)
+                                                       :Total_all)))))
+            years)
+      [])))
 
 (defn total-send-population
   ([total-population la sen2 watermark legend-spec]
@@ -25,10 +28,13 @@
     :legend {:label "Population"
              :legend-spec (if legend-spec
                             legend-spec
-                            [[:line "SEN2"
-                              {:color wsc/orange :stroke {:size 4} :shape \O :font "Open Sans" :font-size 36}]
-                             [:line "Total count of EHCPs"
-                              {:color wsc/blue :stroke {:size 4} :shape \^ :font "Open Sans" :font-size 36}]])} ;; flip shape in legend
+                            (if (seq sen2)
+                              [[:line "SEN2"
+                                {:color wsc/orange :stroke {:size 4} :shape \O :font "Open Sans" :font-size 36}]
+                               [:line "Total count of EHCPs"
+                                {:color wsc/blue :stroke {:size 4} :shape \^ :font "Open Sans" :font-size 36}]]
+                              [[:line "Total count of EHCPs"
+                                {:color wsc/blue :stroke {:size 4} :shape \^ :font "Open Sans" :font-size 36}]]))} ;; flip shape in legend
     :title  {:label (str la " Count of EHCPs")
              :format {:font-size 24 :font "Open Sans" :margin 36 :font-style nil}}
     :watermark watermark
